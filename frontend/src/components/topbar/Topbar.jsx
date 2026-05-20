@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { SignedIn, SignedOut, UserButton, SignInButton } from "@clerk/clerk-react";
+import { SignedIn, SignedOut, UserButton, SignInButton, useAuth } from "@clerk/clerk-react";
 import "./topbar.css";
 
 const NAV_LINKS = [
@@ -16,6 +16,7 @@ export default function Topbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [readProgress, setReadProgress] = useState(0);
 
+  const { isLoaded, isSignedIn } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const inputRef = useRef(null);
@@ -159,14 +160,13 @@ export default function Topbar() {
             </div>
 
             {/* Auth */}
-            <SignedOut>
+            {isLoaded && isSignedIn ? (
+              <UserButton afterSignOutUrl="/" />
+            ) : (
               <SignInButton mode="modal">
                 <button className="nav-login-btn">Login</button>
               </SignInButton>
-            </SignedOut>
-            <SignedIn>
-              <UserButton afterSignOutUrl="/" />
-            </SignedIn>
+            )}
 
             {/* Hamburger */}
             <button
@@ -198,14 +198,18 @@ export default function Topbar() {
               {label}
             </Link>
           ))}
-          <SignedIn>
+          {isLoaded && isSignedIn ? (
             <Link
               to="/dashboard"
               className={`nav-mobile-link ${isActive("/dashboard") ? "active" : ""}`}
             >
               Dashboard
             </Link>
-          </SignedIn>
+          ) : (
+            <SignInButton mode="modal">
+              <button className="nav-mobile-login-btn">Login</button>
+            </SignInButton>
+          )}
           <div className="nav-mobile-search">
             <input
               type="text"
