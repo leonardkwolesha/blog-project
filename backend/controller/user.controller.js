@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt";
+import cloudinary from "../config/cloudinary.js";
 import User from "../models/user.model.js";
 
 export const getCurrentUser = async (req, res) => {
@@ -24,6 +25,39 @@ export const updateProfile = async (req, res) => {
     return res.status(200).json({
       success: true,
       data: { _id: user._id, email: user.email, username: user.username, imageUrl: user.imageUrl },
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+export const uploadAvatar = async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ success: false, message: "No file provided" });
+
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    let imageUrl;
+    if (req.file.path) {
+      // Cloudinary storage — file.path is already the secure URL
+      imageUrl = req.file.path;
+    } else {
+      // Local fallback — upload buffer to Cloudinary manually
+      const b64 = Buffer.from(req.file.buffer).toString("base64");
+      const dataURI = `data:${req.file.mimetype};base64,${b64}`;
+      const result = await cloudinary.uploader.upload(dataURI, {
+        folder: "blog_avatars",
+        transformation: [{ width: 200, height: 200, crop: "fill", gravity: "face" }],
+      });
+      imageUrl = result.secure_url;
+    }
+
+    user.imageUrl = imageUrl;
+    await user.save();
+    return res.status(200).json({
+      success: true,
+      data: { _id: user._id, email: user.email, username: user.username, imageUrl },
     });
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });

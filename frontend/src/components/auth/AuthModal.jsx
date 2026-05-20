@@ -7,6 +7,7 @@ import "./AuthModal.css";
 export default function AuthModal({ onClose, defaultTab = "login" }) {
   const [tab, setTab] = useState(defaultTab);
   const [form, setForm] = useState({ email: "", password: "", username: "" });
+  const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -24,6 +25,7 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
   const switchTab = (t) => {
     setTab(t);
     setError("");
+    setShowPw(false);
     setForm({ email: "", password: "", username: "" });
   };
 
@@ -124,16 +126,27 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
 
             <div className="auth-field">
               <label htmlFor="am-password">Password</label>
-              <input
-                id="am-password"
-                name="password"
-                type="password"
-                placeholder={tab === "register" ? "At least 6 characters" : "Your password"}
-                value={form.password}
-                onChange={handleChange}
-                required
-                autoComplete={tab === "login" ? "current-password" : "new-password"}
-              />
+              <div className="auth-pw-wrapper">
+                <input
+                  id="am-password"
+                  name="password"
+                  type={showPw ? "text" : "password"}
+                  placeholder={tab === "register" ? "At least 6 characters" : "Your password"}
+                  value={form.password}
+                  onChange={handleChange}
+                  required
+                  autoComplete={tab === "login" ? "current-password" : "new-password"}
+                />
+                <button
+                  type="button"
+                  className="auth-pw-toggle"
+                  onClick={() => setShowPw((v) => !v)}
+                  aria-label={showPw ? "Hide password" : "Show password"}
+                  tabIndex={-1}
+                >
+                  <i className={`fa-solid ${showPw ? "fa-eye-slash" : "fa-eye"}`} />
+                </button>
+              </div>
             </div>
 
             <button className="auth-submit-btn" type="submit" disabled={loading}>

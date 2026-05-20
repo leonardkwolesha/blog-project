@@ -14,27 +14,43 @@
   gap: 24px;
 }
 
+/* ── Header card ── */
 .settings-header {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 24px;
   background: #fff;
   border-radius: 16px;
   padding: 28px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
+/* ── Avatar upload area ── */
+.settings-avatar-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
 .settings-avatar {
-  width: 64px;
-  height: 64px;
+  position: relative;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
   background: linear-gradient(135deg, #ff6b00, #e63946);
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
   overflow: hidden;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: 0 2px 12px rgba(255, 107, 0, 0.25);
+  transition: box-shadow 0.2s;
 }
+
+.settings-avatar:hover { box-shadow: 0 4px 20px rgba(255, 107, 0, 0.4); }
 
 .settings-avatar img {
   width: 100%;
@@ -44,8 +60,58 @@
 
 .settings-initials {
   color: #fff;
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 800;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Camera overlay on hover */
+.settings-avatar-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 18px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  border-radius: 50%;
+}
+
+.settings-avatar:hover .settings-avatar-overlay { opacity: 1; }
+
+/* Upload confirm button — appears after picking a file */
+.settings-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: #ff6b00;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: "Segoe UI", sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, transform 0.15s;
+  animation: fadeSlideUp 0.2s ease both;
+}
+
+.settings-upload-btn:hover:not(:disabled) {
+  background: #e05a00;
+  transform: translateY(-1px);
+}
+
+.settings-upload-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .settings-title {
@@ -58,9 +124,16 @@
 .settings-email {
   font-size: 13px;
   color: #888;
+  margin: 0 0 4px;
+}
+
+.settings-avatar-hint {
+  font-size: 12px;
+  color: #bbb;
   margin: 0;
 }
 
+/* ── Sections ── */
 .settings-section {
   background: #fff;
   border-radius: 16px;
@@ -77,6 +150,7 @@
   border-bottom: 1px solid #f0f0f0;
 }
 
+/* ── Messages ── */
 .settings-msg {
   display: flex;
   align-items: center;
@@ -100,6 +174,7 @@
   color: #dc2626;
 }
 
+/* ── Form ── */
 .settings-form {
   display: flex;
   flex-direction: column;
@@ -128,6 +203,8 @@
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
   background: #fafafa;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .settings-field input:focus {
@@ -136,12 +213,33 @@
   background: #fff;
 }
 
-.settings-hint {
-  font-size: 12px;
-  color: #aaa;
-  margin: 0;
+/* ── Password eye toggle ── */
+.s-pw-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
+.s-pw-wrapper input { padding-right: 44px; }
+
+.s-pw-toggle {
+  all: unset;
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #aaa;
+  font-size: 15px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: color 0.18s;
+  line-height: 1;
+}
+
+.s-pw-toggle:hover { color: #ff6b00; }
+
+/* ── Save button ── */
 .settings-btn {
   display: flex;
   align-items: center;
@@ -165,11 +263,9 @@
   transform: translateY(-1px);
 }
 
-.settings-btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
+.settings-btn:disabled { opacity: 0.7; cursor: not-allowed; }
 
+/* ── Spinner ── */
 .settings-spinner {
   width: 14px;
   height: 14px;
@@ -177,12 +273,12 @@
   border-top-color: #fff;
   border-radius: 50%;
   animation: sSpin 0.7s linear infinite;
+  flex-shrink: 0;
 }
 
-@keyframes sSpin {
-  to { transform: rotate(360deg); }
-}
+@keyframes sSpin { to { transform: rotate(360deg); } }
 
+/* ── Responsive ── */
 @media (max-width: 640px) {
   .settings-header { flex-direction: column; text-align: center; }
   .settings-section { padding: 20px 16px; }
