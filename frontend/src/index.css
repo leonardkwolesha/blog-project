@@ -1,17 +1,14 @@
-*, *::before, *::after {
-  box-sizing: border-box;
-}
+/* ── Reset / base ── */
+*, *::before, *::after { box-sizing: border-box; }
 
-html {
-  scroll-behavior: smooth;
-}
+html { scroll-behavior: smooth; }
 
 html, body {
   height: 100%;
   margin: 0;
   padding: 0;
   font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
-  background-color: #f8f8f8;
+  background: #f8f8f8;
   color: #222;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
@@ -23,20 +20,33 @@ html, body {
   flex-direction: column;
 }
 
-.main-content {
-  flex: 1;
+.main-content { flex: 1; }
+
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; }
+img { max-width: 100%; display: block; }
+
+/* ── Page container — used by inner pages (single, about, contact…) ── */
+.page-container {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 48px 24px 72px;
+  width: 100%;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+.page-container-wide {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 48px 24px 72px;
+  width: 100%;
 }
 
-button {
-  font-family: inherit;
+@media (max-width: 768px) {
+  .page-container,
+  .page-container-wide { padding: 32px 16px 56px; }
 }
 
-img {
-  max-width: 100%;
-  display: block;
+@media (max-width: 480px) {
+  .page-container,
+  .page-container-wide { padding: 24px 14px 48px; }
 }

@@ -25,7 +25,7 @@
 .sp-hero {
   position: relative;
   width: 100%;
-  height: 520px;
+  height: clamp(280px, 52vh, 560px);
   overflow: hidden;
   display: flex;
   align-items: flex-end;
@@ -234,7 +234,7 @@
 
 .sp-skeleton-hero {
   width: 100%;
-  height: 520px;
+  height: clamp(280px, 52vh, 560px);
   background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite;
@@ -286,27 +286,18 @@
 .sp-error p { font-size: 18px; margin-bottom: 24px; }
 
 /* ── Responsive ── */
-@media (max-width: 900px) {
-  .sp-hero { height: 440px; }
-  .sp-skeleton-hero { height: 440px; }
-}
-
 @media (max-width: 768px) {
-  .sp-hero { height: 360px; }
-  .sp-skeleton-hero { height: 360px; }
-  .sp-hero-content { padding: 0 20px 40px; }
-  .sp-content { padding: 32px 20px 48px; }
-  .sp-subtitle { font-size: 16px; }
-  .sp-body { font-size: 16px; }
+  .sp-hero-content { padding: 0 18px 36px; }
+  .sp-content      { padding: 28px 18px 48px; }
+  .sp-subtitle     { font-size: 16px; }
+  .sp-body         { font-size: 15.5px; }
 }
 
 @media (max-width: 480px) {
-  .sp-hero { height: 300px; }
-  .sp-skeleton-hero { height: 300px; }
-  .sp-hero-content { padding: 0 16px 32px; }
-  .sp-content { padding: 24px 16px 40px; }
-  .sp-subtitle { font-size: 15px; }
-  .sp-body { font-size: 15px; line-height: 1.75; }
+  .sp-hero-content { padding: 0 14px 28px; }
+  .sp-content      { padding: 22px 14px 40px; }
+  .sp-subtitle     { font-size: 15px; }
+  .sp-body         { font-size: 15px; line-height: 1.75; }
   .sp-body p:first-of-type::first-letter { font-size: 2.2em; }
-  .sp-scroll-hint { display: none; }
+  .sp-scroll-hint  { display: none; }
 }
