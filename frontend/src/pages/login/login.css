@@ -98,6 +98,8 @@
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
   background: #fafafa;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .auth-page-field input:focus {
@@ -105,6 +107,54 @@
   box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.1);
   background: #fff;
 }
+
+/* ── Password label row ── */
+.auth-page-pw-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.auth-page-pw-label-row label { margin-bottom: 0; }
+
+.auth-page-forgot {
+  font-size: 12px;
+  font-weight: 600;
+  color: #ff6b00;
+  text-decoration: none;
+  transition: text-decoration-color 0.18s;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+}
+
+.auth-page-forgot:hover { text-decoration-color: #ff6b00; }
+
+/* ── Password eye wrapper ── */
+.auth-page-pw-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.auth-page-pw-wrapper input { padding-right: 44px; }
+
+.auth-page-pw-toggle {
+  all: unset;
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #aaa;
+  font-size: 15px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: color 0.18s;
+  line-height: 1;
+}
+
+.auth-page-pw-toggle:hover { color: #ff6b00; }
 
 .auth-page-btn {
   display: flex;

@@ -6,8 +6,9 @@ import { API_BASE } from "../../config/api";
 import "./login.css";
 
 export default function Login() {
-  const [form, setForm] = useState({ email: "", password: "" });
-  const [error, setError] = useState("");
+  const [form, setForm]     = useState({ email: "", password: "" });
+  const [showPw, setShowPw] = useState(false);
+  const [error, setError]   = useState("");
   const [loading, setLoading] = useState(false);
   const { login, isSignedIn } = useAuth();
   const navigate = useNavigate();
@@ -61,15 +62,32 @@ export default function Login() {
               required autoFocus
             />
           </div>
+
           <div className="auth-page-field">
-            <label htmlFor="lp-password">Password</label>
-            <input
-              id="lp-password" name="password" type="password"
-              placeholder="Your password"
-              value={form.password} onChange={handleChange}
-              required
-            />
+            <div className="auth-page-pw-label-row">
+              <label htmlFor="lp-password">Password</label>
+              <Link to="/forgot-password" className="auth-page-forgot">Forgot password?</Link>
+            </div>
+            <div className="auth-page-pw-wrapper">
+              <input
+                id="lp-password" name="password"
+                type={showPw ? "text" : "password"}
+                placeholder="Your password"
+                value={form.password} onChange={handleChange}
+                required autoComplete="current-password"
+              />
+              <button
+                type="button"
+                className="auth-page-pw-toggle"
+                onClick={() => setShowPw((v) => !v)}
+                aria-label={showPw ? "Hide password" : "Show password"}
+                tabIndex={-1}
+              >
+                <i className={`fa-solid ${showPw ? "fa-eye-slash" : "fa-eye"}`} />
+              </button>
+            </div>
           </div>
+
           <button className="auth-page-btn" type="submit" disabled={loading}>
             {loading && <span className="auth-page-spinner" />}
             {loading ? "Signing in…" : "Login"}

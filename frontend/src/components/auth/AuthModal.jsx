@@ -5,10 +5,12 @@ import { API_BASE } from "../../config/api";
 import "./AuthModal.css";
 
 export default function AuthModal({ onClose, defaultTab = "login" }) {
-  const [tab, setTab] = useState(defaultTab);
-  const [form, setForm] = useState({ email: "", password: "", username: "" });
+  // tab: "login" | "register" | "forgot"
+  const [tab, setTab]     = useState(defaultTab);
+  const [form, setForm]   = useState({ email: "", password: "", username: "" });
   const [showPw, setShowPw] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError]   = useState("");
+  const [info, setInfo]     = useState("");
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const overlayRef = useRef(null);
@@ -25,10 +27,12 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
   const switchTab = (t) => {
     setTab(t);
     setError("");
+    setInfo("");
     setShowPw(false);
     setForm({ email: "", password: "", username: "" });
   };
 
+  /* ── Login / Register submit ── */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -52,6 +56,86 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
     }
   };
 
+  /* ── Forgot password submit ── */
+  const handleForgot = async (e) => {
+    e.preventDefault();
+    setError("");
+    setInfo("");
+    setLoading(true);
+    try {
+      await axios.post(`${API_BASE}/api/auth/forgot-password`, { email: form.email });
+      setInfo("Check your inbox — we sent a reset link if that email is registered.");
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to send reset email. Try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ── Forgot view ── */
+  if (tab === "forgot") {
+    return (
+      <div
+        className="auth-overlay"
+        ref={overlayRef}
+        onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
+      >
+        <div className="auth-card" role="dialog" aria-modal="true">
+          <div className="auth-card-header">
+            <div className="auth-logo">
+              <span className="auth-logo-dot" />
+              <span className="auth-logo-name">blogger<span>LK</span></span>
+            </div>
+            <button className="auth-close-btn" onClick={onClose} aria-label="Close">×</button>
+          </div>
+
+          <div className="auth-body">
+            <button className="auth-back-link" onClick={() => switchTab("login")}>
+              <i className="fa-solid fa-arrow-left" /> Back to login
+            </button>
+
+            <h2 className="auth-title" style={{ marginTop: "14px" }}>Forgot password?</h2>
+            <p className="auth-subtitle">Enter your email and we'll send you a reset link.</p>
+
+            {error && (
+              <div className="auth-error">
+                <i className="fa-solid fa-circle-exclamation" /> {error}
+              </div>
+            )}
+
+            {info ? (
+              <div className="auth-success">
+                <i className="fa-solid fa-circle-check" /> {info}
+              </div>
+            ) : (
+              <form onSubmit={handleForgot}>
+                <div className="auth-field">
+                  <label htmlFor="am-forgot-email">Email</label>
+                  <input
+                    id="am-forgot-email"
+                    name="email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={form.email}
+                    onChange={handleChange}
+                    required
+                    autoFocus
+                  />
+                </div>
+
+                <button className="auth-submit-btn" type="submit" disabled={loading} style={{ marginTop: "8px" }}>
+                  {loading && <span className="auth-spinner" />}
+                  {loading ? "Sending…" : "Send reset link"}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* ── Login / Register view ── */
   return (
     <div
       className="auth-overlay"
@@ -88,8 +172,7 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
 
           {error && (
             <div className="auth-error">
-              <i className="fa-solid fa-circle-exclamation" />
-              {error}
+              <i className="fa-solid fa-circle-exclamation" /> {error}
             </div>
           )}
 
@@ -125,7 +208,18 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
             </div>
 
             <div className="auth-field">
-              <label htmlFor="am-password">Password</label>
+              <div className="auth-pw-label-row">
+                <label htmlFor="am-password">Password</label>
+                {tab === "login" && (
+                  <button
+                    type="button"
+                    className="auth-forgot-link"
+                    onClick={() => switchTab("forgot")}
+                  >
+                    Forgot password?
+                  </button>
+                )}
+              </div>
               <div className="auth-pw-wrapper">
                 <input
                   id="am-password"
