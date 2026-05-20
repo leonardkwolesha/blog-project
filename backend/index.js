@@ -37,6 +37,8 @@ const allowedOrigins = (process.env.FRONTEND_URL || "http://localhost:5173")
   .map((o) => o.trim())
   .filter(Boolean);
 
+// any localhost port (Vite picks a free port when 5173 is busy)
+const localhostDev = /^http:\/\/localhost:\d+$/;
 // Vercel preview deployments get unique URLs — allow all previews for this project
 const vercelPreview = /^https:\/\/blog-project[a-z0-9-]*\.vercel\.app$/;
 
@@ -46,6 +48,7 @@ app.use(
       // allow server-to-server / curl / Postman (no origin header)
       if (!origin) return cb(null, true);
       if (allowedOrigins.includes(origin)) return cb(null, true);
+      if (localhostDev.test(origin)) return cb(null, true);
       if (vercelPreview.test(origin)) return cb(null, true);
       // reject silently — do NOT throw, that crashes Express error handler
       return cb(null, false);
