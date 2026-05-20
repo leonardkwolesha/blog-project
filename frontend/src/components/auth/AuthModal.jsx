@@ -41,14 +41,16 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
     setError("");
     setInfo("");
     setLoading(true);
-    try {
-      const url = tab === "login"
-        ? `${API_BASE}/api/auth/login`
-        : `${API_BASE}/api/auth/register`;
 
-      const payload = tab === "login"
-        ? { email: form.email, password: form.password }
-        : { email: form.email, password: form.password, username: form.username };
+    // Capture tab value now — don't read it inside the async catch (stale closure risk)
+    const isRegister       = tab === "register";
+    const normalizedEmail  = form.email.trim().toLowerCase();
+
+    try {
+      const url     = isRegister ? `${API_BASE}/api/auth/register` : `${API_BASE}/api/auth/login`;
+      const payload = isRegister
+        ? { email: normalizedEmail, password: form.password, username: form.username.trim() }
+        : { email: normalizedEmail, password: form.password };
 
       const res = await axios.post(url, payload);
       login(res.data.token, res.data.user);
@@ -57,16 +59,14 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
       const status = err.response?.status;
       const msg    = err.response?.data?.message || "Something went wrong. Try again.";
 
-      // Email already exists during register → seamlessly switch to login
-      if (tab === "register" && status === 409) {
-        switchTab("login", true);          // keep the email they typed
-        setInfo("This email is already registered — log in below.");
-        return;
-      }
-
-      // Wrong password → nudge towards forgot password
-      if (tab === "login" && status === 401) {
-        setError(msg);
+      if (isRegister && status === 409) {
+        // Email already exists — switch to login tab directly without going through
+        // switchTab() (which would call setInfo("") and race with our setInfo below)
+        setTab("login");
+        setShowPw(false);
+        setForm({ email: normalizedEmail, password: "", username: "" });
+        setError("");
+        setInfo("This email is already registered. Log in or reset your password below.");
         return;
       }
 
@@ -83,7 +83,7 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
     setInfo("");
     setLoading(true);
     try {
-      await axios.post(`${API_BASE}/api/auth/forgot-password`, { email: form.email });
+      await axios.post(`${API_BASE}/api/auth/forgot-password`, { email: form.email.trim().toLowerCase() });
       setInfo("Check your inbox — we sent a reset link if that email is registered.");
     } catch (err) {
       setError(err.response?.data?.message || "Failed to send reset email. Try again.");
