@@ -21,8 +21,9 @@
 /* ── Hero shell ── */
 .hero {
   position: relative;
-  /* fluid height — never shorter than 440px, naturally taller on big screens */
-  min-height: clamp(440px, 62vh, 620px);
+  /* fill the viewport below the 58px sticky nav */
+  min-height: calc(100vh - 58px);
+  min-height: calc(100svh - 58px); /* modern mobile: excludes browser chrome */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -253,7 +254,6 @@
 
 /* Tablet */
 @media (max-width: 900px) {
-  .hero { min-height: clamp(400px, 58vh, 520px); }
   .hero-content { padding: 44px 20px 40px; }
   .hero-sub { margin-bottom: 22px; }
   .hero-search { max-width: 100%; }
@@ -261,7 +261,7 @@
 
 /* Large phone */
 @media (max-width: 640px) {
-  .hero { min-height: 0; }
+  .hero { min-height: calc(100vh - 58px); min-height: calc(100svh - 58px); }
   .hero-content { padding: 48px 16px 44px; }
 
   /* Horizontal-scroll pill strip — no line breaks, users swipe */

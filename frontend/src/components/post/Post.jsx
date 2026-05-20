@@ -9,31 +9,48 @@ function calcReadTime(content) {
   return Math.max(1, Math.ceil(words / 200));
 }
 
+// Read/write a boolean flag to localStorage keyed by post id + type
+function getStored(id, type) {
+  try { return localStorage.getItem(`blog_${type}_${id}`) === "true"; }
+  catch { return false; }
+}
+function setStored(id, type, value) {
+  try { localStorage.setItem(`blog_${type}_${id}`, value); }
+  catch { /* storage blocked */ }
+}
+
 export default function Post({ blog }) {
-  const [imgError, setImgError]   = useState(false);
-  const [liked, setLiked]         = useState(false);
-  const [likePop, setLikePop]     = useState(false);
-  const [saved, setSaved]         = useState(false);
-  const [savePop, setSavePop]     = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   if (!blog) return null;
 
   const { _id, title, description, image, author, createdAt, category, content, tags } = blog;
-  const mins   = calcReadTime(content);
-  const date   = createdAt
+
+  // Initialise from localStorage so state survives page refresh
+  const [liked,   setLiked]   = useState(() => getStored(_id, "liked"));
+  const [saved,   setSaved]   = useState(() => getStored(_id, "saved"));
+  const [likePop, setLikePop] = useState(false);
+  const [savePop, setSavePop] = useState(false);
+
+  const mins    = calcReadTime(content);
+  const date    = createdAt
     ? new Date(createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
     : "";
   const imgSrc  = (!image || imgError) ? FALLBACK : image;
   const initial = (author?.username || "A")[0].toUpperCase();
 
   const handleLike = () => {
-    setLiked(v => !v);
+    const next = !liked;
+    setLiked(next);
+    setStored(_id, "liked", next);
     setLikePop(true);
     setTimeout(() => setLikePop(false), 400);
   };
 
   const handleSave = () => {
-    setSaved(v => !v);
+    const next = !saved;
+    setSaved(next);
+    setStored(_id, "saved", next);
     setSavePop(true);
     setTimeout(() => setSavePop(false), 400);
   };
@@ -51,22 +68,18 @@ export default function Post({ blog }) {
           onError={() => setImgError(true)}
         />
 
-        {/* full-cover hover CTA */}
         <div className="post-card-hover-cta">
           <span className="post-card-cta-btn">
             <i className="fa-solid fa-book-open" /> Read Article
           </span>
         </div>
 
-        {/* dark gradient */}
         <div className="post-card-img-overlay" />
 
-        {/* category badge */}
         {category && category !== "Uncategorized" && (
           <span className="post-card-badge">{category}</span>
         )}
 
-        {/* read-time */}
         <span className="post-card-read-badge">
           <i className="fa-regular fa-clock" /> {mins} min read
         </span>
@@ -80,25 +93,32 @@ export default function Post({ blog }) {
           <button
             className={[
               "post-card-action-btn",
-              liked    ? "active-like" : "",
-              likePop  ? "popping"     : "",
+              liked   ? "active-like" : "",
+              likePop ? "popping"     : "",
             ].filter(Boolean).join(" ")}
             onClick={handleLike}
             title={liked ? "Unlike" : "Like"}
+            aria-label={liked ? "Unlike this post" : "Like this post"}
+            aria-pressed={liked}
           >
             <i className={liked ? "fa-solid fa-heart" : "fa-regular fa-heart"} />
           </button>
           <button
             className={[
               "post-card-action-btn",
-              saved    ? "active-save" : "",
-              savePop  ? "popping"     : "",
+              saved   ? "active-save" : "",
+              savePop ? "popping"     : "",
             ].filter(Boolean).join(" ")}
             onClick={handleSave}
             title={saved ? "Unsave" : "Save"}
+            aria-label={saved ? "Unsave this post" : "Save this post"}
+            aria-pressed={saved}
           >
             <i className={saved ? "fa-solid fa-bookmark" : "fa-regular fa-bookmark"} />
           </button>
+          {saved && (
+            <span className="post-card-saved-label">Saved</span>
+          )}
         </div>
 
         <Link to={`/post/${_id}`} className="post-card-title-link">
@@ -111,7 +131,6 @@ export default function Post({ blog }) {
           </p>
         )}
 
-        {/* tags */}
         {tags?.length > 0 && (
           <div className="post-card-tags">
             {tags.slice(0, 3).map(tag => (
@@ -120,7 +139,6 @@ export default function Post({ blog }) {
           </div>
         )}
 
-        {/* footer */}
         <div className="post-card-footer">
           <div className="post-card-author-wrap">
             <div className="post-card-avatar" aria-hidden="true">{initial}</div>

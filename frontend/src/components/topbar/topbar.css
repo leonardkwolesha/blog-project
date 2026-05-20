@@ -459,7 +459,10 @@
   .nav-hamburger { display: flex; }
   .nav-mobile-menu { display: flex; }
   .nav-inner { gap: 10px; padding: 0 16px; }
-  .nav-search-input { width: 130px; }
+  /* hide desktop search on mobile — mobile menu has its own search */
+  .nav-search-wrap { display: none; }
+  /* push hamburger to the far right */
+  .nav-right { margin-left: auto; }
 }
 
 @media (max-width: 540px) {

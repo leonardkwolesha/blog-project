@@ -191,7 +191,15 @@ a.ct-info-value:hover { color: #ff6b00; }
 .ct-response-badge i { font-size: 14px; }
 .ct-response-badge strong { color: #13a05e; }
 
-/* ── FORM ── */
+/* ── FORM CARD ── */
+.ct-form-wrap {
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.07);
+  border: 1px solid #f0f0f0;
+}
+
 .ct-form-title {
   font-size: 22px;
   font-weight: 800;
@@ -436,8 +444,19 @@ a.ct-info-value:hover { color: #ff6b00; }
 @media (max-width: 900px) {
   .ct-body {
     grid-template-columns: 1fr;
-    gap: 40px;
-    padding: 48px 24px;
+    gap: 28px;
+    padding: 40px 20px;
+  }
+
+  .ct-form-wrap { padding: 24px; }
+
+  /* sidebar card on mobile */
+  .ct-sidebar {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.07);
+    border: 1px solid #f0f0f0;
   }
 }
 
