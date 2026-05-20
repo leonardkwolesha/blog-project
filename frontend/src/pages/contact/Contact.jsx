@@ -16,13 +16,13 @@ const CONTACT_INFO = [
     icon: "fa-brands fa-github",
     label: "GitHub",
     value: "github.com/leonardkwolesha",
-    href: "https://github.com/leonardkwolesha",
+    href: "https://github.com/leonardkwolesha/",
   },
   {
-    icon: "fa-brands fa-x-twitter",
-    label: "Twitter / X",
-    value: "@bloggerlk",
-    href: "https://twitter.com",
+    icon: "fa-brands fa-linkedin-in",
+    label: "LinkedIn",
+    value: "leonard-sengoma",
+    href: "https://www.linkedin.com/in/leonard-sengoma-39a337351/",
   },
   {
     icon: "fa-solid fa-location-dot",

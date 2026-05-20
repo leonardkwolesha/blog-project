@@ -33,13 +33,10 @@ export default function Sidebar({ onCategoryClick }) {
       <div className="sidebar-card sidebar-social">
         <h3 className="sidebar-heading">Follow</h3>
         <div className="sidebar-social-links">
-          <a href="#" className="social-link" aria-label="Twitter / X">
-            <i className="fa-brands fa-x-twitter" />
-          </a>
-          <a href="#" className="social-link" aria-label="GitHub">
+          <a href="https://github.com/leonardkwolesha/" target="_blank" rel="noreferrer" className="social-link" aria-label="GitHub">
             <i className="fa-brands fa-github" />
           </a>
-          <a href="#" className="social-link" aria-label="LinkedIn">
+          <a href="https://www.linkedin.com/in/leonard-sengoma-39a337351/" target="_blank" rel="noreferrer" className="social-link" aria-label="LinkedIn">
             <i className="fa-brands fa-linkedin-in" />
           </a>
         </div>

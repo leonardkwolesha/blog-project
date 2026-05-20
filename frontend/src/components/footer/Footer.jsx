@@ -53,17 +53,11 @@ export default function Footer() {
               A space for developers to share knowledge, build ideas, and grow together.
             </p>
             <div className="ft-socials">
-              <a href="#" className="ft-social-btn" aria-label="Twitter">
-                <i className="fa-brands fa-x-twitter" />
-              </a>
-              <a href="#" className="ft-social-btn" aria-label="GitHub">
+              <a href="https://github.com/leonardkwolesha/" target="_blank" rel="noreferrer" className="ft-social-btn" aria-label="GitHub">
                 <i className="fa-brands fa-github" />
               </a>
-              <a href="#" className="ft-social-btn" aria-label="LinkedIn">
+              <a href="https://www.linkedin.com/in/leonard-sengoma-39a337351/" target="_blank" rel="noreferrer" className="ft-social-btn" aria-label="LinkedIn">
                 <i className="fa-brands fa-linkedin-in" />
-              </a>
-              <a href="#" className="ft-social-btn" aria-label="YouTube">
-                <i className="fa-brands fa-youtube" />
               </a>
             </div>
           </div>
