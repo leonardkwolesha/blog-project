@@ -1,12 +1,11 @@
 import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useAuth } from "./context/AuthContext";
 import "./App.css";
 
 // Layout
 import Topbar from "./components/topbar/Topbar";
 import Footer from "./components/footer/Footer";
-import SyncUser from "./components/syncUser/SyncUser";
 
 // Pages
 import Homepage from "./pages/homepage/Homepage";
@@ -21,17 +20,23 @@ import Dashboard from "./pages/dashboard/Dashboard";
 import SearchResults from "./pages/searchResults/SearchResults";
 import TermsOfService from "./pages/legal/TermsOfService";
 import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
+import Login from "./pages/login/Login";
+import Register from "./pages/register/Register";
+
+function ProtectedRoute({ children }) {
+  const { isLoaded, isSignedIn } = useAuth();
+  if (!isLoaded) return null;
+  if (!isSignedIn) return <Navigate to="/login" replace />;
+  return children;
+}
 
 function App() {
   return (
     <BrowserRouter>
       <Topbar />
-      <SyncUser />
       <main className="main-content">
         <Routes>
-          {/* ===================== */}
-          {/* PUBLIC ROUTES */}
-          {/* ===================== */}
+          {/* PUBLIC */}
           <Route path="/" element={<Homepage />} />
           <Route path="/posts" element={<Homepage />} />
           <Route path="/post/:id" element={<Single />} />
@@ -40,85 +45,15 @@ function App() {
           <Route path="/search" element={<SearchResults />} />
           <Route path="/terms" element={<TermsOfService />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
-          {/* Edit blog is protected but can also handle direct URL access */}
-          <Route
-            path="/blogs/edit/:blogId"
-            element={
-              <>
-                <SignedIn>
-                  <EditBlog />
-                </SignedIn>
-                <SignedOut>
-                  <RedirectToSignIn />
-                </SignedOut>
-              </>
-            }
-          />
-
-          {/* ===================== */}
-          {/* PROTECTED ROUTES */}
-          {/* ===================== */}
-
-          {/* Dashboard */}
-          <Route
-            path="/dashboard"
-            element={
-              <>
-                <SignedIn>
-                  <Dashboard />
-                </SignedIn>
-                <SignedOut>
-                  <RedirectToSignIn />
-                </SignedOut>
-              </>
-            }
-          />
-
-          {/* Create Blog */}
-          <Route
-            path="/create-blog"
-            element={
-              <>
-                <SignedIn>
-                  <CreateBlog />
-                </SignedIn>
-                <SignedOut>
-                  <RedirectToSignIn />
-                </SignedOut>
-              </>
-            }
-          />
-
-          {/* View Blogs */}
-          <Route
-            path="/blogs"
-            element={
-              <>
-                <SignedIn>
-                  <ViewBlogs />
-                </SignedIn>
-                <SignedOut>
-                  <RedirectToSignIn />
-                </SignedOut>
-              </>
-            }
-          />
-
-          {/* Settings */}
-          <Route
-            path="/settings"
-            element={
-              <>
-                <SignedIn>
-                  <Settings />
-                </SignedIn>
-                <SignedOut>
-                  <RedirectToSignIn />
-                </SignedOut>
-              </>
-            }
-          />
+          {/* PROTECTED */}
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/create-blog" element={<ProtectedRoute><CreateBlog /></ProtectedRoute>} />
+          <Route path="/blogs" element={<ProtectedRoute><ViewBlogs /></ProtectedRoute>} />
+          <Route path="/blogs/edit/:blogId" element={<ProtectedRoute><EditBlog /></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
         </Routes>
       </main>
       <Footer />

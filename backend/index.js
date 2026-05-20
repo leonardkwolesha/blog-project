@@ -7,9 +7,8 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import fs from "fs";
 import path from "path";
-import { clerkMiddleware } from "@clerk/express";
-
 import connectDB from "./config/db.js";
+import authRouter from "./router/auth.router.js";
 import userRoutes from "./router/user.router.js";
 import blogRouter from "./router/BlogPost.router.js";
 import contactRouter from "./router/contact.router.js";
@@ -75,9 +74,6 @@ const contactLimiter = rateLimit({
 app.use("/api", apiLimiter);
 app.use("/api/contact", contactLimiter);
 
-// ── Clerk middleware (validates JWT signatures properly) ──────────────────────
-app.use(clerkMiddleware());
-
 // ── Health check ─────────────────────────────────────────────────────────────
 app.get("/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
@@ -88,6 +84,7 @@ app.get("/", (req, res) => {
 });
 
 // ── Routes ───────────────────────────────────────────────────────────────────
+app.use("/api/auth", authRouter);
 app.use("/api/users", userRoutes);
 app.use("/api/blogs", blogRouter);
 app.use("/api/contact", contactRouter);

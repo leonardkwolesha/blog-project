@@ -29,9 +29,9 @@ const ensureUserExists = async (req, res, next) => {
       return res.status(401).json({ success: false, message: "Unauthorized" });
 
     const { default: User } = await import("../models/User.model.js");
-    const user = await User.findOne({ clerkId: req.userId });
+    const user = await User.findById(req.userId);
     if (!user)
-      return res.status(404).json({ success: false, message: "User not found. Please sync your account first." });
+      return res.status(404).json({ success: false, message: "User not found. Please register first." });
 
     req.user = user;
     next();

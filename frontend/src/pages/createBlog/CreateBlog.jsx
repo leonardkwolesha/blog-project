@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import axios from "axios";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth } from "../../context/AuthContext";
 import "./CreateBlog.css";
 import { API_BASE } from "../../config/api";
 
@@ -8,7 +8,7 @@ const CATEGORIES = ["Technology", "Science", "Life", "Career", "Design", "Other"
 const MAX_FILE_MB = 5;
 
 export default function CreateBlog() {
-  const { getToken, isSignedIn } = useAuth();
+  const { token, isSignedIn } = useAuth();
 
   const [form, setForm] = useState({
     title: "", description: "", content: "",
@@ -61,7 +61,6 @@ export default function CreateBlog() {
 
     setLoading(true);
     try {
-      const token = await getToken({ skipCache: true });
       const data  = new FormData();
       data.append("title",       form.title.trim());
       data.append("description", form.description.trim());

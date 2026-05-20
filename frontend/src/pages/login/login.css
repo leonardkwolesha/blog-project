@@ -1,70 +1,165 @@
-.login {
-  height: calc(100vh - 50px);
+.auth-page {
+  min-height: 80vh;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(
-      rgba(255, 255, 255, 0.5),
-      rgba(255, 255, 255, 0.5)
-    ),
-    url("https://images.pexels.com/photos/768473/pexels-photo-768473.jpeg?auto=compress&cs=tinysrgb&dpr=2&w=500");
-  background-size: cover;
+  padding: 24px 16px;
+  background: #f8f8f8;
 }
 
-.card {
-  width: 400px;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  background-color: rgba(182, 137, 137, 0.5);
-
+.auth-page-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 40px 36px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
 }
 
-.loginTitle {
-  font-size: 50px;
+.auth-page-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 28px;
 }
 
-.loginForm {
-  margin-top: 20px;
+.auth-page-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff6b00, #e63946);
+}
+
+.auth-page-brand {
+  font-size: 18px;
+  font-weight: 900;
+  color: #1a1a2e;
+  letter-spacing: -0.3px;
+}
+
+.auth-page-brand span {
+  background: linear-gradient(90deg, #ff6b00, #e63946);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.auth-page-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #1a1a2e;
+  margin: 0 0 6px;
+}
+
+.auth-page-sub {
+  font-size: 14px;
+  color: #888;
+  margin: 0 0 24px;
+}
+
+.auth-page-error {
+  background: #fff5f5;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #dc2626;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.auth-page-form {
   display: flex;
   flex-direction: column;
+  gap: 14px;
 }
 
-.loginForm > label {
-  margin: 10px 0;
+.auth-page-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.loginInput {
-  padding: 10px;
-  background-color: white;
-  border: none;
+.auth-page-field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #444;
+}
+
+.auth-page-field input {
+  padding: 12px 14px;
+  border: 1.5px solid #e0e0e0;
   border-radius: 10px;
-}
-
-.loginInput:focus {
+  font-size: 14px;
+  font-family: "Segoe UI", sans-serif;
+  color: #222;
   outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background: #fafafa;
 }
 
-.loginButton {
-  margin-top: 20px;
-  cursor: pointer;
-  background-color: lightcoral;
-  color: white;
-  padding: 10px;
+.auth-page-field input:focus {
+  border-color: #ff6b00;
+  box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.1);
+  background: #fff;
+}
+
+.auth-page-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px;
+  background: #ff6b00;
+  color: #fff;
   border: none;
   border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: "Segoe UI", sans-serif;
+  transition: background 0.2s, transform 0.15s;
+  margin-top: 4px;
+}
+
+.auth-page-btn:hover:not(:disabled) {
+  background: #e05a00;
+  transform: translateY(-1px);
+}
+
+.auth-page-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.auth-page-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: apSpin 0.7s linear infinite;
+}
+
+@keyframes apSpin {
+  to { transform: rotate(360deg); }
+}
+
+.auth-page-switch {
   text-align: center;
+  margin-top: 22px;
+  font-size: 13px;
+  color: #888;
 }
 
-.loginRegisterButton {
-  position: absolute;
-  top: 60px;
-  right: 20px;
-  background-color: teal;
-  cursor: pointer;
-  padding: 10px;
-  border: none;
-  color: white;
-  border-radius: 10px;
+.auth-page-switch a {
+  color: #ff6b00;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.auth-page-switch a:hover {
+  text-decoration: underline;
 }

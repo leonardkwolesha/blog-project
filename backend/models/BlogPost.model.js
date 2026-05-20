@@ -38,7 +38,7 @@ const blogPostSchema = new mongoose.Schema(
     },
     authorClerkId: {
       type: String,
-      required: true,
+      default: "",
     },
     views: {
       type: Number,

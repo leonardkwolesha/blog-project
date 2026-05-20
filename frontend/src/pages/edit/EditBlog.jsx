@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth } from "../../context/AuthContext";
 import axios from "axios";
 import "./EditBlog.css";
 import { API_BASE } from "../../config/api";
@@ -10,7 +10,7 @@ const CATEGORIES = ["Technology", "Science", "Life", "Career", "Design", "Other"
 export default function EditBlog() {
   const { blogId } = useParams();
   const navigate = useNavigate();
-  const { isLoaded, isSignedIn, getToken } = useAuth();
+  const { isLoaded, isSignedIn, token } = useAuth();
 
   const [form, setForm] = useState({
     title: "", description: "", content: "",
@@ -31,7 +31,6 @@ export default function EditBlog() {
 
     const fetchBlog = async () => {
       try {
-        const token = await getToken({ skipCache: true });
         const res = await axios.get(`${API_BASE}/api/blogs/${blogId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -56,7 +55,7 @@ export default function EditBlog() {
     };
 
     fetchBlog();
-  }, [blogId, isLoaded, isSignedIn, getToken]);
+  }, [blogId, isLoaded, isSignedIn, token]);
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -75,7 +74,6 @@ export default function EditBlog() {
     setSaving(true);
 
     try {
-      const token = await getToken({ skipCache: true });
       const data = new FormData();
       data.append("title", form.title.trim());
       data.append("description", form.description.trim());

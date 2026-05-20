@@ -1,23 +1,27 @@
-// models/user.model.js
-
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
     clerkId: {
       type: String,
-      required: true,
-      unique: true,
-      index: true,
+      default: null,
+      sparse: true,
     },
     username: {
       type: String,
       default: "",
+      trim: true,
     },
     email: {
       type: String,
       required: true,
       unique: true,
+      lowercase: true,
+      trim: true,
+    },
+    password: {
+      type: String,
+      default: "",
     },
     imageUrl: {
       type: String,
@@ -27,7 +31,5 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Prevent model overwrite errors in development
 const User = mongoose.models.User || mongoose.model("User", userSchema);
-
 export default User;

@@ -1,78 +1,98 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import "./register.css";
+import { useAuth } from "../../context/AuthContext";
 import { API_BASE } from "../../config/api";
+import "../login/login.css";
 
 export default function Register() {
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [form, setForm] = useState({ username: "", email: "", password: "" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { login, isSignedIn } = useAuth();
+  const navigate = useNavigate();
 
-  // ✅ Function to send data using axios
-  const handleRegister = async (e) => {
-    e.preventDefault(); // prevent page reload
+  if (isSignedIn) {
+    navigate("/dashboard", { replace: true });
+    return null;
+  }
 
+  const handleChange = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    if (form.password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+    setLoading(true);
     try {
-      const res = await axios.post(`${API_BASE}/api/user/register`, {
-        username,
-        email,
-        password,
-      });
-
-      console.log("Server response:", res.data);
-      alert("User registered successfully!");
+      const res = await axios.post(`${API_BASE}/api/auth/register`, form);
+      login(res.data.token, res.data.user);
+      navigate("/dashboard", { replace: true });
     } catch (err) {
-      console.error(err);
-      if (err.response) {
-        // Server responded with a status other than 2xx
-        alert("Error: " + err.response.data.message);
-      } else {
-        // Network or other error
-        alert("Something went wrong");
-      }
+      setError(err.response?.data?.message || "Registration failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="register">
-      <span className="registerTitle">Register</span>
-      <form className="registerForm" onSubmit={handleRegister}>
-        <label>Username</label>
-        <input
-          className="registerInput"
-          type="text"
-          placeholder="Enter your username..."
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
+    <div className="auth-page">
+      <div className="auth-page-card">
+        <div className="auth-page-logo">
+          <span className="auth-page-dot" />
+          <span className="auth-page-brand">blogger<span>LK</span></span>
+        </div>
 
-        <label>Email</label>
-        <input
-          className="registerInput"
-          type="text"
-          placeholder="Enter your email..."
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+        <h1 className="auth-page-title">Create account</h1>
+        <p className="auth-page-sub">Join bloggerLK and start writing today.</p>
 
-        <label>Password</label>
-        <input
-          className="registerInput"
-          type="password"
-          placeholder="Enter your password..."
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        {error && (
+          <div className="auth-page-error">
+            <i className="fa-solid fa-circle-exclamation" /> {error}
+          </div>
+        )}
 
-        <button className="registerButton" type="submit">
-          Register
-        </button>
-      </form>
+        <form className="auth-page-form" onSubmit={handleSubmit}>
+          <div className="auth-page-field">
+            <label htmlFor="rp-username">Username</label>
+            <input
+              id="rp-username" name="username" type="text"
+              placeholder="Your name or handle"
+              value={form.username} onChange={handleChange}
+              autoFocus
+            />
+          </div>
+          <div className="auth-page-field">
+            <label htmlFor="rp-email">Email</label>
+            <input
+              id="rp-email" name="email" type="email"
+              placeholder="you@example.com"
+              value={form.email} onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="auth-page-field">
+            <label htmlFor="rp-password">Password</label>
+            <input
+              id="rp-password" name="password" type="password"
+              placeholder="At least 6 characters"
+              value={form.password} onChange={handleChange}
+              required
+            />
+          </div>
+          <button className="auth-page-btn" type="submit" disabled={loading}>
+            {loading && <span className="auth-page-spinner" />}
+            {loading ? "Creating account…" : "Create account"}
+          </button>
+        </form>
 
-       <Link to="/write">
-        <button className="registerLoginButton">Login</button>
-      </Link>
+        <p className="auth-page-switch">
+          Already have an account? <Link to="/login">Login</Link>
+        </p>
+      </div>
     </div>
   );
 }

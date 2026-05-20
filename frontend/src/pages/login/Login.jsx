@@ -1,76 +1,85 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import "./login.css";
+import { useAuth } from "../../context/AuthContext";
 import { API_BASE } from "../../config/api";
+import "./login.css";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const navigate = useNavigate(); // for redirecting after login
+  const [form, setForm] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { login, isSignedIn } = useAuth();
+  const navigate = useNavigate();
 
-  // ✅ Function to send login data to backend
-  const handleLogin = async (e) => {
-    e.preventDefault(); // prevent page reload
+  if (isSignedIn) {
+    navigate("/dashboard", { replace: true });
+    return null;
+  }
 
+  const handleChange = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
     try {
-      const res = await axios.post(`${API_BASE}/api/user/login`, {
-        email,
-        password,
-      });
-
-      console.log("Server response:", res.data);
-      alert("Login successful!");
-
-      // Optionally, save user data or token
-      // localStorage.setItem("user", JSON.stringify(res.data.data));
-
-      // Redirect to homepage or dashboard
-      navigate("/"); 
+      const res = await axios.post(`${API_BASE}/api/auth/login`, form);
+      login(res.data.token, res.data.user);
+      navigate("/dashboard", { replace: true });
     } catch (err) {
-      console.error("Login error:", err);
-      if (err.response) {
-        // Server responded with an error (wrong credentials, etc.)
-        alert("Error: " + err.response.data.message);
-      } else if (err.request) {
-        // Request made but no response
-        alert("No response from server");
-      } else {
-        alert("Something went wrong");
-      }
+      setError(err.response?.data?.message || "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="login">
-      <span className="loginTitle">Login</span>
-      <form className="loginForm" onSubmit={handleLogin}>
-        <label>Email</label>
-        <input
-          className="loginInput"
-          type="text"
-          placeholder="Enter your email..."
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+    <div className="auth-page">
+      <div className="auth-page-card">
+        <div className="auth-page-logo">
+          <span className="auth-page-dot" />
+          <span className="auth-page-brand">blogger<span>LK</span></span>
+        </div>
 
-        <label>Password</label>
-        <input
-          className="loginInput"
-          type="password"
-          placeholder="Enter your password..."
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        <h1 className="auth-page-title">Welcome back</h1>
+        <p className="auth-page-sub">Sign in to manage your posts.</p>
 
-        <button className="loginButton" type="submit">
-          Login
-        </button>
-      </form>
-      <Link to="/register">
-      
-        <button className="loginRegisterButton">Register</button>
-      </Link>
+        {error && (
+          <div className="auth-page-error">
+            <i className="fa-solid fa-circle-exclamation" /> {error}
+          </div>
+        )}
+
+        <form className="auth-page-form" onSubmit={handleSubmit}>
+          <div className="auth-page-field">
+            <label htmlFor="lp-email">Email</label>
+            <input
+              id="lp-email" name="email" type="email"
+              placeholder="you@example.com"
+              value={form.email} onChange={handleChange}
+              required autoFocus
+            />
+          </div>
+          <div className="auth-page-field">
+            <label htmlFor="lp-password">Password</label>
+            <input
+              id="lp-password" name="password" type="password"
+              placeholder="Your password"
+              value={form.password} onChange={handleChange}
+              required
+            />
+          </div>
+          <button className="auth-page-btn" type="submit" disabled={loading}>
+            {loading && <span className="auth-page-spinner" />}
+            {loading ? "Signing in…" : "Login"}
+          </button>
+        </form>
+
+        <p className="auth-page-switch">
+          Don't have an account? <Link to="/register">Register</Link>
+        </p>
+      </div>
     </div>
   );
 }

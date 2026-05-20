@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth } from "../../context/AuthContext";
 import "./ViewBlog.css";
 import { API_BASE } from "../../config/api";
 
@@ -68,7 +68,7 @@ export default function ViewBlogs() {
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
   const [confirmId, setConfirmId] = useState(null);
-  const { isLoaded, isSignedIn, getToken } = useAuth();
+  const { isLoaded, isSignedIn, token } = useAuth();
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
@@ -80,7 +80,6 @@ export default function ViewBlogs() {
 
     const fetchBlogs = async () => {
       try {
-        const token = await getToken();
         const res = await axios.get(`${API_BASE}/api/blogs`, {
           headers: { Authorization: `Bearer ${token}` },
           params: { limit: 50 },
@@ -95,11 +94,10 @@ export default function ViewBlogs() {
     };
 
     fetchBlogs();
-  }, [isLoaded, isSignedIn, getToken]);
+  }, [isLoaded, isSignedIn, token]);
 
   const handleDelete = async (blogId) => {
     try {
-      const token = await getToken();
       await axios.delete(`${API_BASE}/api/blogs/${blogId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });

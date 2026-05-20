@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { SignedIn, SignedOut, UserButton, SignInButton, useAuth } from "@clerk/clerk-react";
+import { useAuth } from "../../context/AuthContext";
+import AuthModal from "../auth/AuthModal";
+import UserDropdown from "../auth/UserDropdown";
 import "./topbar.css";
 
 const NAV_LINKS = [
@@ -15,6 +17,7 @@ export default function Topbar() {
   const [query, setQuery] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const [readProgress, setReadProgress] = useState(0);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const { isLoaded, isSignedIn } = useAuth();
   const navigate = useNavigate();
@@ -26,7 +29,6 @@ export default function Topbar() {
 
   const isSinglePost = location.pathname.startsWith("/post/");
 
-  // Scroll shadow + reading progress
   useEffect(() => {
     const onScroll = () => {
       setScrolled(window.scrollY > 20);
@@ -41,22 +43,23 @@ export default function Topbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, [isSinglePost]);
 
-  // Auto-focus search input
   useEffect(() => {
     if (showSearch) inputRef.current?.focus();
   }, [showSearch]);
 
-  // Close mobile menu on route change
   useEffect(() => {
     setMenuOpen(false);
     setShowSearch(false);
     setQuery("");
   }, [location.pathname]);
 
-  // Keyboard shortcut: / to open search
   useEffect(() => {
     const handler = (e) => {
-      if (e.key === "/" && document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA") {
+      if (
+        e.key === "/" &&
+        document.activeElement.tagName !== "INPUT" &&
+        document.activeElement.tagName !== "TEXTAREA"
+      ) {
         e.preventDefault();
         setShowSearch(true);
       }
@@ -112,14 +115,14 @@ export default function Topbar() {
                 {isActive(to) && <span className="nav-link-dot" aria-hidden="true" />}
               </Link>
             ))}
-            <SignedIn>
+            {isLoaded && isSignedIn && (
               <Link
                 to="/dashboard"
                 className={`nav-link nav-link-dashboard ${isActive("/dashboard") ? "nav-link-active" : ""}`}
               >
                 Dashboard
               </Link>
-            </SignedIn>
+            )}
           </nav>
 
           {/* Right controls */}
@@ -160,12 +163,14 @@ export default function Topbar() {
             </div>
 
             {/* Auth */}
-            {isLoaded && isSignedIn ? (
-              <UserButton afterSignOutUrl="/" />
-            ) : (
-              <SignInButton mode="modal">
-                <button className="nav-login-btn">Login</button>
-              </SignInButton>
+            {isLoaded && (
+              isSignedIn
+                ? <UserDropdown />
+                : (
+                  <button className="nav-login-btn" onClick={() => setShowAuthModal(true)}>
+                    Login
+                  </button>
+                )
             )}
 
             {/* Hamburger */}
@@ -180,7 +185,7 @@ export default function Topbar() {
           </div>
         </div>
 
-        {/* Reading progress bar (single post only) */}
+        {/* Reading progress bar */}
         {isSinglePost && (
           <div className="nav-progress-bar">
             <div className="nav-progress-fill" style={{ width: `${readProgress}%` }} />
@@ -206,9 +211,12 @@ export default function Topbar() {
               Dashboard
             </Link>
           ) : (
-            <SignInButton mode="modal">
-              <button className="nav-mobile-login-btn">Login</button>
-            </SignInButton>
+            <button
+              className="nav-mobile-login-btn"
+              onClick={() => { setMenuOpen(false); setShowAuthModal(true); }}
+            >
+              Login
+            </button>
           )}
           <div className="nav-mobile-search">
             <input
@@ -230,6 +238,9 @@ export default function Topbar() {
       {menuOpen && (
         <div className="nav-overlay" onClick={() => setMenuOpen(false)} aria-hidden="true" />
       )}
+
+      {/* Auth Modal */}
+      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
     </>
   );
 }

@@ -1,12 +1,15 @@
-import { getAuth } from "@clerk/express";
+import jwt from "jsonwebtoken";
 
-// clerkMiddleware() in index.js validates the RS256 signature automatically.
-// This middleware just checks the resulting auth state and sets req.userId.
 export const verifyClerkToken = (req, res, next) => {
-  const { userId } = getAuth(req);
-  if (!userId) {
-    return res.status(401).json({ success: false, message: "Unauthorized: valid token required" });
+  const header = req.headers.authorization;
+  if (!header?.startsWith("Bearer "))
+    return res.status(401).json({ success: false, message: "Unauthorized: token required" });
+
+  try {
+    const { userId } = jwt.verify(header.split(" ")[1], process.env.JWT_SECRET);
+    req.userId = userId;
+    next();
+  } catch {
+    return res.status(401).json({ success: false, message: "Unauthorized: invalid token" });
   }
-  req.userId = userId;
-  next();
 };
