@@ -1,6 +1,7 @@
 import multer from "multer";
 import path from "path";
-import { CloudinaryStorage } from "multer-storage-cloudinary";
+import multerCloudinary from "multer-storage-cloudinary";
+const { CloudinaryStorage } = multerCloudinary;
 import cloudinary from "../config/cloudinary.js";
 
 // Check if Cloudinary is configured
