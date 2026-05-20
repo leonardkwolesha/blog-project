@@ -7,6 +7,7 @@ import "../login/login.css";
 
 export default function Register() {
   const [form, setForm] = useState({ username: "", email: "", password: "" });
+  const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { login, isSignedIn } = useAuth();
@@ -32,6 +33,13 @@ export default function Register() {
       login(res.data.token, res.data.user);
       navigate("/dashboard", { replace: true });
     } catch (err) {
+      const status = err.response?.status;
+      if (status === 409) {
+        navigate("/login", {
+          state: { email: form.email, message: "This email is already registered — log in below." },
+        });
+        return;
+      }
       setError(err.response?.data?.message || "Registration failed. Please try again.");
     } finally {
       setLoading(false);
@@ -76,12 +84,24 @@ export default function Register() {
           </div>
           <div className="auth-page-field">
             <label htmlFor="rp-password">Password</label>
-            <input
-              id="rp-password" name="password" type="password"
-              placeholder="At least 6 characters"
-              value={form.password} onChange={handleChange}
-              required
-            />
+            <div className="auth-page-pw-wrapper">
+              <input
+                id="rp-password" name="password"
+                type={showPw ? "text" : "password"}
+                placeholder="At least 6 characters"
+                value={form.password} onChange={handleChange}
+                required autoComplete="new-password"
+              />
+              <button
+                type="button"
+                className="auth-page-pw-toggle"
+                onClick={() => setShowPw((v) => !v)}
+                aria-label={showPw ? "Hide password" : "Show password"}
+                tabIndex={-1}
+              >
+                <i className={`fa-solid ${showPw ? "fa-eye-slash" : "fa-eye"}`} />
+              </button>
+            </div>
           </div>
           <button className="auth-page-btn" type="submit" disabled={loading}>
             {loading && <span className="auth-page-spinner" />}

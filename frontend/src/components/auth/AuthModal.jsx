@@ -5,12 +5,11 @@ import { API_BASE } from "../../config/api";
 import "./AuthModal.css";
 
 export default function AuthModal({ onClose, defaultTab = "login" }) {
-  // tab: "login" | "register" | "forgot"
-  const [tab, setTab]     = useState(defaultTab);
-  const [form, setForm]   = useState({ email: "", password: "", username: "" });
+  const [tab, setTab]       = useState(defaultTab);
+  const [form, setForm]     = useState({ email: "", password: "", username: "" });
   const [showPw, setShowPw] = useState(false);
   const [error, setError]   = useState("");
-  const [info, setInfo]     = useState("");
+  const [info, setInfo]     = useState("");   // non-blocking hint message
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const overlayRef = useRef(null);
@@ -24,18 +23,23 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
   const handleChange = (e) =>
     setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
 
-  const switchTab = (t) => {
+  const switchTab = (t, keepEmail = false) => {
     setTab(t);
     setError("");
     setInfo("");
     setShowPw(false);
-    setForm({ email: "", password: "", username: "" });
+    setForm((p) => ({
+      email: keepEmail ? p.email : "",
+      password: "",
+      username: "",
+    }));
   };
 
   /* ── Login / Register submit ── */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setInfo("");
     setLoading(true);
     try {
       const url = tab === "login"
@@ -50,7 +54,23 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
       login(res.data.token, res.data.user);
       onClose();
     } catch (err) {
-      setError(err.response?.data?.message || "Something went wrong. Try again.");
+      const status = err.response?.status;
+      const msg    = err.response?.data?.message || "Something went wrong. Try again.";
+
+      // Email already exists during register → seamlessly switch to login
+      if (tab === "register" && status === 409) {
+        switchTab("login", true);          // keep the email they typed
+        setInfo("This email is already registered — log in below.");
+        return;
+      }
+
+      // Wrong password → nudge towards forgot password
+      if (tab === "login" && status === 401) {
+        setError(msg);
+        return;
+      }
+
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -122,7 +142,6 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
                     autoFocus
                   />
                 </div>
-
                 <button className="auth-submit-btn" type="submit" disabled={loading} style={{ marginTop: "8px" }}>
                   {loading && <span className="auth-spinner" />}
                   {loading ? "Sending…" : "Send reset link"}
@@ -170,9 +189,26 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
               : "Join bloggerLK and start writing today."}
           </p>
 
+          {/* Info banner (non-blocking, e.g. "already registered, log in") */}
+          {info && (
+            <div className="auth-info">
+              <i className="fa-solid fa-circle-info" /> {info}
+            </div>
+          )}
+
           {error && (
             <div className="auth-error">
               <i className="fa-solid fa-circle-exclamation" /> {error}
+              {/* Wrong password hint */}
+              {tab === "login" && (
+                <button
+                  type="button"
+                  className="auth-forgot-inline"
+                  onClick={() => switchTab("forgot", true)}
+                >
+                  Forgot password?
+                </button>
+              )}
             </div>
           )}
 
@@ -214,7 +250,7 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
                   <button
                     type="button"
                     className="auth-forgot-link"
-                    onClick={() => switchTab("forgot")}
+                    onClick={() => switchTab("forgot", true)}
                   >
                     Forgot password?
                   </button>

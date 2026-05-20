@@ -302,6 +302,38 @@
 
 .auth-back-link:hover { color: #ff6b00; }
 
+/* ── Info banner (non-blocking, e.g. "already registered — log in") ── */
+.auth-info {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #1d4ed8;
+  font-weight: 600;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+
+/* ── Inline "Forgot password?" inside error banner ── */
+.auth-forgot-inline {
+  all: unset;
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #dc2626;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition: text-decoration-color 0.18s;
+}
+
+.auth-forgot-inline:hover { text-decoration-color: #dc2626; }
+
 /* ── Success message (forgot password sent) ── */
 .auth-success {
   background: #f0fdf4;

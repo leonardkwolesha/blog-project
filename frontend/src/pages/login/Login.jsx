@@ -1,13 +1,15 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 import { API_BASE } from "../../config/api";
 import "./login.css";
 
 export default function Login() {
-  const [form, setForm]     = useState({ email: "", password: "" });
+  const location = useLocation();
+  const [form, setForm]     = useState({ email: location.state?.email || "", password: "" });
   const [showPw, setShowPw] = useState(false);
+  const [info, setInfo]     = useState(location.state?.message || "");
   const [error, setError]   = useState("");
   const [loading, setLoading] = useState(false);
   const { login, isSignedIn } = useAuth();
@@ -45,6 +47,12 @@ export default function Login() {
 
         <h1 className="auth-page-title">Welcome back</h1>
         <p className="auth-page-sub">Sign in to manage your posts.</p>
+
+        {info && (
+          <div className="auth-page-info">
+            <i className="fa-solid fa-circle-info" /> {info}
+          </div>
+        )}
 
         {error && (
           <div className="auth-page-error">

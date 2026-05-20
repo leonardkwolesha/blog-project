@@ -57,6 +57,21 @@
   margin: 0 0 24px;
 }
 
+.auth-page-info {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #1d4ed8;
+  font-weight: 600;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  line-height: 1.5;
+}
+
 .auth-page-error {
   background: #fff5f5;
   border: 1px solid #fecaca;
