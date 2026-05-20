@@ -38,20 +38,13 @@ export const uploadAvatar = async (req, res) => {
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
-    let imageUrl;
-    if (req.file.path) {
-      // Cloudinary storage — file.path is already the secure URL
-      imageUrl = req.file.path;
-    } else {
-      // Local fallback — upload buffer to Cloudinary manually
-      const b64 = Buffer.from(req.file.buffer).toString("base64");
-      const dataURI = `data:${req.file.mimetype};base64,${b64}`;
-      const result = await cloudinary.uploader.upload(dataURI, {
-        folder: "blog_avatars",
-        transformation: [{ width: 200, height: 200, crop: "fill", gravity: "face" }],
-      });
-      imageUrl = result.secure_url;
-    }
+    const b64     = Buffer.from(req.file.buffer).toString("base64");
+    const dataURI = `data:${req.file.mimetype};base64,${b64}`;
+    const result  = await cloudinary.uploader.upload(dataURI, {
+      folder: "blog_avatars",
+      transformation: [{ width: 200, height: 200, crop: "fill", gravity: "face" }],
+    });
+    const imageUrl = result.secure_url;
 
     user.imageUrl = imageUrl;
     await user.save();
