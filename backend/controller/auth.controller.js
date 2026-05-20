@@ -26,14 +26,16 @@ export const register = async (req, res) => {
     const normalEmail = email.toLowerCase().trim();
     const existing = await User.findOne({ email: normalEmail });
 
+    // Already registered with a password — reject
     if (existing && existing.password) {
-      return res.status(409).json({ success: false, message: "Email already registered" });
+      return res.status(409).json({ success: false, message: "An account with this email already exists. Please log in." });
     }
 
     const hashed = await bcrypt.hash(password, 12);
 
     let user;
     if (existing) {
+      // Old Clerk account — claim it by setting a password
       existing.password = hashed;
       if (username?.trim()) existing.username = username.trim();
       await existing.save();
@@ -53,7 +55,13 @@ export const register = async (req, res) => {
     });
   } catch (err) {
     console.error("Register error:", err.message);
-    return res.status(500).json({ success: false, message: "Registration failed" });
+    // Duplicate key — race condition where two requests created the same email
+    if (err.code === 11000)
+      return res.status(409).json({ success: false, message: "An account with this email already exists." });
+    // DB unreachable
+    if (err.name === "MongooseError" || err.name === "MongoNetworkError" || err.message?.includes("connect"))
+      return res.status(503).json({ success: false, message: "Service temporarily unavailable. Please try again shortly." });
+    return res.status(500).json({ success: false, message: "Registration failed. Please try again." });
   }
 };
 
@@ -65,8 +73,9 @@ export const forgotPassword = async (req, res) => {
 
     const user = await User.findOne({ email: email.toLowerCase().trim() });
 
-    // Always respond with success to avoid email enumeration
-    if (!user || !user.password) {
+    // Always respond with success to avoid email enumeration — but ANY registered
+    // user (with or without a password) can receive a reset link
+    if (!user) {
       return res.status(200).json({ success: true, message: "If that email exists, a reset link has been sent." });
     }
 
@@ -155,6 +164,8 @@ export const login = async (req, res) => {
     });
   } catch (err) {
     console.error("Login error:", err.message);
-    return res.status(500).json({ success: false, message: "Login failed" });
+    if (err.name === "MongooseError" || err.name === "MongoNetworkError" || err.message?.includes("connect"))
+      return res.status(503).json({ success: false, message: "Service temporarily unavailable. Please try again shortly." });
+    return res.status(500).json({ success: false, message: "Login failed. Please try again." });
   }
 };
