@@ -1,42 +1,58 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 import { API_BASE } from "../../config/api";
 import "../login/login.css";
 
 export default function Register() {
-  const [form, setForm] = useState({ username: "", email: "", password: "" });
-  const [showPw, setShowPw] = useState(false);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const { login, isSignedIn } = useAuth();
-  const navigate = useNavigate();
+  const { login, isLoaded, isSignedIn } = useAuth();
+  const navigate                        = useNavigate();
 
-  if (isSignedIn) {
-    navigate("/dashboard", { replace: true });
-    return null;
-  }
+  const [form, setForm]       = useState({ username: "", email: "", password: "" });
+  const [showPw, setShowPw]   = useState(false);
+  const [error, setError]     = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // Wait for localStorage to be read before deciding anything
+  if (!isLoaded) return null;
+
+  // Already signed in — send to dashboard
+  if (isSignedIn) return <Navigate to="/dashboard" replace />;
 
   const handleChange = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    if (!form.email.trim()) {
+      setError("Email is required.");
+      return;
+    }
     if (form.password.length < 6) {
       setError("Password must be at least 6 characters.");
       return;
     }
+
     setLoading(true);
     try {
-      const res = await axios.post(`${API_BASE}/api/auth/register`, form);
+      const res = await axios.post(`${API_BASE}/api/auth/register`, {
+        username: form.username.trim(),
+        email: form.email.trim().toLowerCase(),
+        password: form.password,
+      });
       login(res.data.token, res.data.user);
       navigate("/dashboard", { replace: true });
     } catch (err) {
       const status = err.response?.status;
       if (status === 409) {
+        // Email already exists — send user to login with email pre-filled
         navigate("/login", {
-          state: { email: form.email, message: "This email is already registered — log in below." },
+          state: {
+            email: form.email.trim().toLowerCase(),
+            message: "This email is already registered — log in below.",
+          },
         });
         return;
       }
@@ -63,34 +79,47 @@ export default function Register() {
           </div>
         )}
 
-        <form className="auth-page-form" onSubmit={handleSubmit}>
+        <form className="auth-page-form" onSubmit={handleSubmit} noValidate>
           <div className="auth-page-field">
             <label htmlFor="rp-username">Username</label>
             <input
-              id="rp-username" name="username" type="text"
+              id="rp-username"
+              name="username"
+              type="text"
               placeholder="Your name or handle"
-              value={form.username} onChange={handleChange}
+              value={form.username}
+              onChange={handleChange}
               autoFocus
+              autoComplete="username"
             />
           </div>
+
           <div className="auth-page-field">
             <label htmlFor="rp-email">Email</label>
             <input
-              id="rp-email" name="email" type="email"
+              id="rp-email"
+              name="email"
+              type="email"
               placeholder="you@example.com"
-              value={form.email} onChange={handleChange}
+              value={form.email}
+              onChange={handleChange}
               required
+              autoComplete="email"
             />
           </div>
+
           <div className="auth-page-field">
             <label htmlFor="rp-password">Password</label>
             <div className="auth-page-pw-wrapper">
               <input
-                id="rp-password" name="password"
+                id="rp-password"
+                name="password"
                 type={showPw ? "text" : "password"}
                 placeholder="At least 6 characters"
-                value={form.password} onChange={handleChange}
-                required autoComplete="new-password"
+                value={form.password}
+                onChange={handleChange}
+                required
+                autoComplete="new-password"
               />
               <button
                 type="button"
@@ -103,6 +132,7 @@ export default function Register() {
               </button>
             </div>
           </div>
+
           <button className="auth-page-btn" type="submit" disabled={loading}>
             {loading && <span className="auth-page-spinner" />}
             {loading ? "Creating account…" : "Create account"}
