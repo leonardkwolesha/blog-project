@@ -1,0 +1,6 @@
+.settings-page {
+  display: flex;
+  justify-content: center;
+  padding: 40px 16px;
+  min-height: 60vh;
+}

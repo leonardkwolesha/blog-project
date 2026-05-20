@@ -1,0 +1,75 @@
+/* ==============================
+   NAV LINKS CONTAINER
+   ============================== */
+.nav-links-container {
+  display: none;              /* hidden on mobile */
+  align-items: center;
+  gap: 16px;
+}
+
+/* Show navbar links on tablet & desktop */
+@media (min-width: 768px) {
+  .nav-links-container {
+    display: flex;
+  }
+}
+
+/* Larger spacing on big screens */
+@media (min-width: 1024px) {
+  .nav-links-container {
+    gap: 32px;
+  }
+}
+
+/* ==============================
+   NAV LINK
+   ============================== */
+.nav-link {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+  color: #ffffff;            /* default text color */
+  transition: color 0.3s ease;
+}
+
+/* Text color when scrolled */
+.nav-link.scrolled {
+  color: #374151;            /* gray-700 */
+}
+
+/* ==============================
+   UNDERLINE ANIMATION
+   ============================== */
+.nav-underline {
+  height: 2px;
+  width: 0;
+  background-color: #ffffff;
+  transition: width 0.3s ease;
+}
+
+/* Underline color when scrolled */
+.nav-link.scrolled .nav-underline {
+  background-color: #374151;
+}
+
+/* Hover effect */
+.nav-link:hover .nav-underline {
+  width: 100%;
+}
+
+/* ==============================
+   CLERK USER BUTTON
+   ============================== */
+.user-button-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+/* Optional: add spacing around Clerk avatar */
+.user-button-wrapper button {
+  cursor: pointer;
+}

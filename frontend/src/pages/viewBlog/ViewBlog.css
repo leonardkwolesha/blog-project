@@ -1,0 +1,305 @@
+.vb-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 10px 0;
+  position: relative;
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* Toast */
+.vb-toast {
+  position: fixed;
+  top: 70px;
+  right: 16px;
+  z-index: 9999;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  animation: vb-slide 0.3s ease;
+  max-width: min(340px, calc(100vw - 32px));
+}
+
+.vb-toast-success { background: #1cb86b; color: #fff; }
+.vb-toast-error   { background: #e63946; color: #fff; }
+
+@keyframes vb-slide {
+  from { transform: translateX(20px); opacity: 0; }
+  to   { transform: translateX(0); opacity: 1; }
+}
+
+/* Confirm dialog */
+.vb-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 5000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.vb-confirm-box {
+  background: #fff;
+  border-radius: 14px;
+  padding: 32px 28px;
+  text-align: center;
+  max-width: 360px;
+  width: 100%;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+}
+
+.vb-confirm-box p {
+  font-size: 17px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 6px;
+}
+
+.vb-confirm-sub {
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  color: #888 !important;
+  margin-bottom: 22px !important;
+}
+
+.vb-confirm-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.vb-btn-cancel {
+  padding: 10px 22px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  min-height: 44px;
+  font-family: inherit;
+}
+
+.vb-btn-cancel:hover { border-color: #999; }
+
+.vb-btn-delete-confirm {
+  padding: 10px 22px;
+  border: none;
+  border-radius: 8px;
+  background: #e63946;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+  min-height: 44px;
+  font-family: inherit;
+}
+
+.vb-btn-delete-confirm:hover { background: #c1121f; }
+
+/* Skeletons */
+.vb-skeleton {
+  height: 100px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Empty */
+.vb-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: #999;
+  font-size: 16px;
+}
+
+.vb-empty-icon { font-size: 36px; color: #ddd; display: block; margin-bottom: 12px; }
+.vb-empty a { color: #ff6b00; font-weight: 600; text-decoration: none; }
+
+/* Cards */
+.vb-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.vb-card {
+  display: flex;
+  gap: 0;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.vb-card:hover {
+  box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+  transform: translateY(-2px);
+}
+
+/* ── Image wrapper ── */
+.vb-card-img-wrap {
+  position: relative;
+  width: 150px;
+  min-width: 150px;
+  align-self: stretch;
+  overflow: hidden;
+  display: block;
+  text-decoration: none;
+  background: #e8e8e8;
+}
+
+.vb-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.vb-card:hover .vb-card-img {
+  transform: scale(1.10);
+}
+
+/* dark overlay + CTA */
+.vb-card-img-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(26, 26, 46, 0.52);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.vb-card:hover .vb-card-img-overlay {
+  opacity: 1;
+}
+
+.vb-card-img-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ff6b00;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 6px 14px;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(255, 107, 0, 0.45);
+  transform: translateY(8px) scale(0.92);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+}
+
+.vb-card:hover .vb-card-img-cta {
+  transform: translateY(0) scale(1);
+}
+
+.vb-card-body {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.vb-card-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.vb-category {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: #fff4ec;
+  color: #ff6b00;
+  padding: 2px 8px;
+  border-radius: 10px;
+  letter-spacing: 0.4px;
+}
+
+.vb-date { font-size: 12px; color: #aaa; }
+
+.vb-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vb-desc {
+  font-size: 13px;
+  color: #777;
+  margin: 0;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.vb-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+  flex-wrap: wrap;
+}
+
+.vb-btn {
+  padding: 6px 14px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  transition: opacity 0.2s;
+  min-height: 34px;
+  font-family: inherit;
+}
+
+.vb-btn:hover { opacity: 0.85; }
+
+.vb-btn-view   { background: #f0f4ff; color: #4a6cf7; }
+.vb-btn-edit   { background: #e8f8ef; color: #1cb86b; }
+.vb-btn-delete { background: #ffeef0; color: #e63946; }
+
+@media (max-width: 768px) {
+  .vb-card-img-wrap { width: 120px; min-width: 120px; }
+}
+
+@media (max-width: 600px) {
+  .vb-card { flex-direction: column; }
+  .vb-card-img-wrap { width: 100%; min-width: 0; height: 190px; align-self: auto; }
+  .vb-card-body { padding: 14px; }
+  .vb-title { white-space: normal; }
+}
+
+@media (max-width: 400px) {
+  .vb-card-img-wrap { height: 155px; }
+  .vb-btn { font-size: 12px; padding: 6px 10px; }
+}
