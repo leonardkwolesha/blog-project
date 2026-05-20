@@ -1,11 +1,21 @@
 import nodemailer from "nodemailer";
 
+// Check whether email credentials are actually configured
+export const canSendEmail = () =>
+  !!(process.env.EMAIL_USER && process.env.EMAIL_PASS);
+
+// Use full SMTP config instead of service:"gmail" so we can set timeouts
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+  connectionTimeout: 10_000,  // fail fast after 10 s
+  greetingTimeout:   10_000,
+  socketTimeout:     15_000,
 });
 
 export const sendResetEmail = async (toEmail, resetUrl) => {

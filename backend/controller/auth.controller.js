@@ -2,7 +2,7 @@ import crypto from "crypto";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
-import { sendResetEmail } from "../config/email.js";
+import { sendResetEmail, canSendEmail } from "../config/email.js";
 
 const sign = (userId) =>
   jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "7d" });
@@ -77,19 +77,29 @@ export const forgotPassword = async (req, res) => {
     user.resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
     await user.save();
 
-    const frontendUrl = (process.env.FRONTEND_URL || "http://localhost:5173")
-      .split(",")
-      .map((u) => u.trim())
-      .find((u) => u.startsWith("https://")) || "http://localhost:5173";
+    // Pick the production HTTPS frontend URL; fall back to localhost for dev
+    const allUrls    = (process.env.FRONTEND_URL || "http://localhost:5173").split(",").map((u) => u.trim());
+    const frontendUrl = allUrls.find((u) => u.startsWith("https://")) || allUrls[0];
+    const resetUrl   = `${frontendUrl}/reset-password?token=${rawToken}`;
 
-    const resetUrl = `${frontendUrl}/reset-password?token=${rawToken}`;
+    if (!canSendEmail()) {
+      // Email not configured — log to console so devs can still test the flow
+      console.warn("⚠️  EMAIL_USER / EMAIL_PASS not set. Password reset URL (dev only):");
+      console.warn("   ", resetUrl);
+      return res.status(200).json({ success: true, message: "If that email exists, a reset link has been sent." });
+    }
 
     await sendResetEmail(user.email, resetUrl);
 
     return res.status(200).json({ success: true, message: "If that email exists, a reset link has been sent." });
   } catch (err) {
     console.error("Forgot password error:", err.message);
-    return res.status(500).json({ success: false, message: "Failed to send reset email. Try again later." });
+    // Give a clearer message when the SMTP connection itself fails
+    const isSmtpErr = err.code === "ECONNECTION" || err.code === "ETIMEDOUT" || err.responseCode >= 500;
+    const message   = isSmtpErr
+      ? "Could not reach the email server. Please try again in a moment."
+      : "Failed to send reset email. Try again later.";
+    return res.status(500).json({ success: false, message });
   }
 };
 
