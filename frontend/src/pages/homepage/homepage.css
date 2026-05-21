@@ -1,14 +1,15 @@
 .home-layout {
   display: grid;
   grid-template-columns: 1fr 280px;
+  grid-template-areas: "main sidebar";
   gap: 32px;
   max-width: 1200px;
   margin: 0 auto;
   padding: 44px 24px 72px;
-  align-items: start;
+  /* stretch (default) keeps .home-sidebar as tall as the posts column so position:sticky on the inner .sidebar works throughout */
 }
 
-.home-main   { grid-area: main;    min-width: 0; }
+.home-main    { grid-area: main;    min-width: 0; align-self: start; }
 .home-sidebar { grid-area: sidebar; min-width: 0; }
 
 /* ── Category filter bar ── */
@@ -85,8 +86,8 @@
     padding: 24px 16px 52px;
   }
 
-  .home-main    { grid-area: main;    margin-top: 28px; }
-  .home-sidebar { grid-area: sidebar; }
+  .home-main    { grid-area: main;    align-self: auto; margin-top: 28px; }
+  .home-sidebar { grid-area: sidebar; align-self: auto; }
 }
 
 /* Large phone */

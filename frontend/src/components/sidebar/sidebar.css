@@ -109,6 +109,15 @@
   color: #ff6b00;
 }
 
+/* Keep strong orange accent when hovering over an already-active button */
+.sidebar-cat-btn.active:hover {
+  border-left-color: #ff6b00;
+}
+
+.sidebar-cat-btn.active:hover .sidebar-cat-arrow {
+  transform: none;
+}
+
 /* ── Social links ── */
 .sidebar-social-links {
   display: flex;
