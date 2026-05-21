@@ -195,9 +195,22 @@
   color: #dc2626;
   margin-bottom: 14px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
 }
+
+.auth-error-dup { align-items: flex-start; line-height: 1.5; }
+
+.auth-err-link {
+  all: unset;
+  color: #dc2626;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.auth-err-link:hover { text-decoration-color: transparent; }
 
 .auth-submit-btn {
   all: unset;

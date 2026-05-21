@@ -47,16 +47,11 @@ export default function Register() {
     } catch (err) {
       const status = err.response?.status;
       if (status === 409) {
-        // Email already exists — send user to login with email pre-filled
-        navigate("/login", {
-          state: {
-            email: form.email.trim().toLowerCase(),
-            message: "This email is already registered — log in below.",
-          },
-        });
-        return;
+        setForm((p) => ({ ...p, password: "" }));   // clear password, keep email
+        setError("duplicate-email");
+      } else {
+        setError(err.response?.data?.message || "Registration failed. Please try again.");
       }
-      setError(err.response?.data?.message || "Registration failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -73,11 +68,22 @@ export default function Register() {
         <h1 className="auth-page-title">Create account</h1>
         <p className="auth-page-sub">Join bloggerLK and start writing today.</p>
 
-        {error && (
+        {error === "duplicate-email" ? (
+          <div className="auth-page-error" style={{ alignItems: "flex-start", lineHeight: 1.5 }}>
+            <i className="fa-solid fa-circle-exclamation" style={{ marginTop: 2 }} />
+            <span>
+              That email is already registered.{" "}
+              <Link to="/login" style={{ color: "#dc2626", fontWeight: 700 }}>Log in</Link>
+              {" "}or{" "}
+              <Link to="/forgot-password" style={{ color: "#dc2626", fontWeight: 700 }}>reset your password</Link>
+              , or use a different email.
+            </span>
+          </div>
+        ) : error ? (
           <div className="auth-page-error">
             <i className="fa-solid fa-circle-exclamation" /> {error}
           </div>
-        )}
+        ) : null}
 
         <form className="auth-page-form" onSubmit={handleSubmit} noValidate>
           <div className="auth-page-field">

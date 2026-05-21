@@ -60,13 +60,9 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
       const msg    = err.response?.data?.message || "Something went wrong. Try again.";
 
       if (isRegister && status === 409) {
-        // Email already exists — switch to login tab directly without going through
-        // switchTab() (which would call setInfo("") and race with our setInfo below)
-        setTab("login");
-        setShowPw(false);
-        setForm({ email: normalizedEmail, password: "", username: "" });
-        setError("");
-        setInfo("This email is already registered. Log in or reset your password below.");
+        // Stay on register — clear password so user can try a different email or fix theirs
+        setForm((p) => ({ ...p, password: "" }));
+        setError("duplicate-email");   // sentinel — rendered as a rich block below
         return;
       }
 
@@ -196,10 +192,24 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
             </div>
           )}
 
-          {error && (
+          {error === "duplicate-email" ? (
+            <div className="auth-error auth-error-dup">
+              <i className="fa-solid fa-circle-exclamation" />
+              <span>
+                That email is already registered.{" "}
+                <button type="button" className="auth-err-link" onClick={() => switchTab("login", true)}>
+                  Log in
+                </button>
+                {" "}or{" "}
+                <button type="button" className="auth-err-link" onClick={() => switchTab("forgot", true)}>
+                  reset your password
+                </button>
+                , or use a different email.
+              </span>
+            </div>
+          ) : error ? (
             <div className="auth-error">
               <i className="fa-solid fa-circle-exclamation" /> {error}
-              {/* Wrong password hint */}
               {tab === "login" && (
                 <button
                   type="button"
@@ -210,7 +220,7 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
                 </button>
               )}
             </div>
-          )}
+          ) : null}
 
           <form onSubmit={handleSubmit}>
             {tab === "register" && (
