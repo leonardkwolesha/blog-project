@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 import { API_BASE } from "../../config/api";
@@ -9,7 +9,6 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function Login() {
   const { login, isLoaded, isSignedIn } = useAuth();
-  const navigate = useNavigate();
 
   const [form, setForm]       = useState({ email: "", password: "" });
   const [touched, setTouched] = useState({ email: false, password: false });
@@ -54,7 +53,7 @@ export default function Login() {
         password: form.password,
       });
       login(res.data.token, res.data.user);
-      navigate("/dashboard", { replace: true });
+      // Navigation handled by the isSignedIn guard at the top of this component
     } catch (err) {
       setServerError(err.response?.data?.message || "Login failed. Please try again.");
     } finally {

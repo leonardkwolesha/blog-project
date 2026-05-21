@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 import { API_BASE } from "../../config/api";
@@ -16,6 +17,7 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
   const [loading, setLoading] = useState(false);
   const [emailTaken, setEmailTaken] = useState(false);
   const { login } = useAuth();
+  const navigate   = useNavigate();
   const overlayRef = useRef(null);
 
   useEffect(() => {
@@ -97,6 +99,7 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
       const res = await axios.post(url, payload);
       login(res.data.token, res.data.user);
       onClose();
+      navigate("/dashboard", { replace: true });
     } catch (err) {
       const status = err.response?.status;
       const msg    = err.response?.data?.message || "Something went wrong. Try again.";
@@ -165,9 +168,19 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
             )}
 
             {info ? (
-              <div className="auth-success">
-                <i className="fa-solid fa-circle-check" /> {info}
-              </div>
+              <>
+                <div className="auth-success">
+                  <i className="fa-solid fa-circle-check" /> {info}
+                </div>
+                <button
+                  className="auth-submit-btn"
+                  type="button"
+                  onClick={() => switchTab("login")}
+                  style={{ marginTop: "12px" }}
+                >
+                  Back to login
+                </button>
+              </>
             ) : (
               <form onSubmit={handleForgot} autoComplete="off" noValidate>
                 <div className="auth-field">
