@@ -1,45 +1,62 @@
 import { useState } from "react";
-import { Link, Navigate, useNavigate, useLocation } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 import { API_BASE } from "../../config/api";
 import "./login.css";
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function Login() {
-  const location                    = useLocation();
   const { login, isLoaded, isSignedIn } = useAuth();
-  const navigate                    = useNavigate();
+  const navigate = useNavigate();
 
   const [form, setForm]       = useState({ email: "", password: "" });
+  const [touched, setTouched] = useState({ email: false, password: false });
   const [showPw, setShowPw]   = useState(false);
-  const [info, setInfo]       = useState("");
-  const [error, setError]     = useState("");
+  const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Wait for localStorage to be read before deciding anything
   if (!isLoaded) return null;
-
-  // Already signed in — send to dashboard
   if (isSignedIn) return <Navigate to="/dashboard" replace />;
 
+  // Compute field errors only for touched fields
+  const fieldErrors = {};
+  if (touched.email) {
+    if (!form.email.trim())                      fieldErrors.email = "Email is required.";
+    else if (!EMAIL_RE.test(form.email.trim()))  fieldErrors.email = "Enter a valid email address.";
+  }
+  if (touched.password && !form.password) {
+    fieldErrors.password = "Password is required.";
+  }
+
   const handleChange = (e) => {
-    setInfo("");  // clear info banner once user starts typing
-    setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setServerError("");
+    setForm((p) => ({ ...p, [name]: value }));
   };
+
+  const handleBlur = (e) => setTouched((p) => ({ ...p, [e.target.name]: true }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+    // Touch all fields so errors become visible
+    setTouched({ email: true, password: true });
+
+    const email = form.email.trim();
+    if (!email || !EMAIL_RE.test(email) || !form.password) return;
+
+    setServerError("");
     setLoading(true);
     try {
       const res = await axios.post(`${API_BASE}/api/auth/login`, {
-        email: form.email.trim().toLowerCase(),
+        email: email.toLowerCase(),
         password: form.password,
       });
       login(res.data.token, res.data.user);
       navigate("/dashboard", { replace: true });
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed. Please try again.");
+      setServerError(err.response?.data?.message || "Login failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -56,20 +73,16 @@ export default function Login() {
         <h1 className="auth-page-title">Welcome back</h1>
         <p className="auth-page-sub">Sign in to manage your posts.</p>
 
-        {info && (
-          <div className="auth-page-info">
-            <i className="fa-solid fa-circle-info" /> {info}
-          </div>
-        )}
-
-        {error && (
+        {serverError && (
           <div className="auth-page-error">
-            <i className="fa-solid fa-circle-exclamation" /> {error}
+            <i className="fa-solid fa-circle-exclamation" /> {serverError}
           </div>
         )}
 
         <form className="auth-page-form" onSubmit={handleSubmit} noValidate autoComplete="off">
-          <div className="auth-page-field">
+
+          {/* Email */}
+          <div className={`auth-page-field${fieldErrors.email ? " has-error" : ""}`}>
             <label htmlFor="lp-email">Email</label>
             <input
               id="lp-email"
@@ -78,13 +91,17 @@ export default function Login() {
               placeholder="you@example.com"
               value={form.email}
               onChange={handleChange}
-              required
+              onBlur={handleBlur}
               autoFocus
               autoComplete="off"
             />
+            {fieldErrors.email && (
+              <span className="auth-field-error">{fieldErrors.email}</span>
+            )}
           </div>
 
-          <div className="auth-page-field">
+          {/* Password */}
+          <div className={`auth-page-field${fieldErrors.password ? " has-error" : ""}`}>
             <div className="auth-page-pw-label-row">
               <label htmlFor="lp-password">Password</label>
               <Link to="/forgot-password" className="auth-page-forgot">Forgot password?</Link>
@@ -97,7 +114,7 @@ export default function Login() {
                 placeholder="Your password"
                 value={form.password}
                 onChange={handleChange}
-                required
+                onBlur={handleBlur}
                 autoComplete="off"
               />
               <button
@@ -110,6 +127,9 @@ export default function Login() {
                 <i className={`fa-solid ${showPw ? "fa-eye-slash" : "fa-eye"}`} />
               </button>
             </div>
+            {fieldErrors.password && (
+              <span className="auth-field-error">{fieldErrors.password}</span>
+            )}
           </div>
 
           <button className="auth-page-btn" type="submit" disabled={loading}>

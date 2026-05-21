@@ -5,41 +5,61 @@ import { useAuth } from "../../context/AuthContext";
 import { API_BASE } from "../../config/api";
 import "../login/login.css";
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function Register() {
   const { login, isLoaded, isSignedIn } = useAuth();
-  const navigate                        = useNavigate();
+  const navigate = useNavigate();
 
   const [form, setForm]       = useState({ username: "", email: "", password: "" });
+  const [touched, setTouched] = useState({ username: false, email: false, password: false });
   const [showPw, setShowPw]   = useState(false);
-  const [error, setError]     = useState("");
+  const [serverError, setServerError] = useState("");
+  const [emailTaken, setEmailTaken]   = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Wait for localStorage to be read before deciding anything
   if (!isLoaded) return null;
-
-  // Already signed in — send to dashboard
   if (isSignedIn) return <Navigate to="/dashboard" replace />;
 
-  const handleChange = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
+  // Compute field errors only for touched fields
+  const fieldErrors = {};
+  if (touched.username && !form.username.trim()) {
+    fieldErrors.username = "Username is required.";
+  }
+  if (touched.email) {
+    if (!form.email.trim())                      fieldErrors.email = "Email is required.";
+    else if (!EMAIL_RE.test(form.email.trim()))  fieldErrors.email = "Enter a valid email address.";
+    else if (emailTaken)                         fieldErrors.email = "taken";
+  }
+  if (touched.password) {
+    if (!form.password)                fieldErrors.password = "Password is required.";
+    else if (form.password.length < 6) fieldErrors.password = "Password must be at least 6 characters.";
+  }
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setServerError("");
+    if (name === "email") setEmailTaken(false);
+    setForm((p) => ({ ...p, [name]: value }));
+  };
+
+  const handleBlur = (e) => setTouched((p) => ({ ...p, [e.target.name]: true }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+    // Touch all fields so errors become visible
+    setTouched({ username: true, email: true, password: true });
 
-    if (!form.email.trim()) {
-      setError("Email is required.");
-      return;
-    }
-    if (form.password.length < 6) {
-      setError("Password must be at least 6 characters.");
-      return;
-    }
+    const email    = form.email.trim().toLowerCase();
+    const username = form.username.trim();
+    if (!username || !email || !EMAIL_RE.test(email) || form.password.length < 6) return;
 
+    setServerError("");
     setLoading(true);
     try {
       const res = await axios.post(`${API_BASE}/api/auth/register`, {
-        username: form.username.trim(),
-        email: form.email.trim().toLowerCase(),
+        username,
+        email,
         password: form.password,
       });
       login(res.data.token, res.data.user);
@@ -47,10 +67,10 @@ export default function Register() {
     } catch (err) {
       const status = err.response?.status;
       if (status === 409) {
-        setForm((p) => ({ ...p, password: "" }));   // clear password, keep email
-        setError("duplicate-email");
+        setEmailTaken(true);
+        setForm((p) => ({ ...p, password: "" }));
       } else {
-        setError(err.response?.data?.message || "Registration failed. Please try again.");
+        setServerError(err.response?.data?.message || "Registration failed. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -68,25 +88,16 @@ export default function Register() {
         <h1 className="auth-page-title">Create account</h1>
         <p className="auth-page-sub">Join bloggerLK and start writing today.</p>
 
-        {error === "duplicate-email" ? (
-          <div className="auth-page-error" style={{ alignItems: "flex-start", lineHeight: 1.5 }}>
-            <i className="fa-solid fa-circle-exclamation" style={{ marginTop: 2 }} />
-            <span>
-              That email is already registered.{" "}
-              <Link to="/login" style={{ color: "#dc2626", fontWeight: 700 }}>Log in</Link>
-              {" "}or{" "}
-              <Link to="/forgot-password" style={{ color: "#dc2626", fontWeight: 700 }}>reset your password</Link>
-              , or use a different email.
-            </span>
-          </div>
-        ) : error ? (
+        {serverError && (
           <div className="auth-page-error">
-            <i className="fa-solid fa-circle-exclamation" /> {error}
+            <i className="fa-solid fa-circle-exclamation" /> {serverError}
           </div>
-        ) : null}
+        )}
 
         <form className="auth-page-form" onSubmit={handleSubmit} noValidate autoComplete="off">
-          <div className="auth-page-field">
+
+          {/* Username */}
+          <div className={`auth-page-field${fieldErrors.username ? " has-error" : ""}`}>
             <label htmlFor="rp-username">Username</label>
             <input
               id="rp-username"
@@ -95,12 +106,17 @@ export default function Register() {
               placeholder="Your name or handle"
               value={form.username}
               onChange={handleChange}
+              onBlur={handleBlur}
               autoFocus
               autoComplete="off"
             />
+            {fieldErrors.username && (
+              <span className="auth-field-error">{fieldErrors.username}</span>
+            )}
           </div>
 
-          <div className="auth-page-field">
+          {/* Email */}
+          <div className={`auth-page-field${fieldErrors.email ? " has-error" : ""}`}>
             <label htmlFor="rp-email">Email</label>
             <input
               id="rp-email"
@@ -109,12 +125,23 @@ export default function Register() {
               placeholder="you@example.com"
               value={form.email}
               onChange={handleChange}
-              required
+              onBlur={handleBlur}
               autoComplete="off"
             />
+            {fieldErrors.email === "taken" ? (
+              <span className="auth-field-error">
+                Email already registered.{" "}
+                <Link to="/login" className="auth-field-err-link">Log in</Link>
+                {" "}or{" "}
+                <Link to="/forgot-password" className="auth-field-err-link">reset password</Link>.
+              </span>
+            ) : fieldErrors.email ? (
+              <span className="auth-field-error">{fieldErrors.email}</span>
+            ) : null}
           </div>
 
-          <div className="auth-page-field">
+          {/* Password */}
+          <div className={`auth-page-field${fieldErrors.password ? " has-error" : ""}`}>
             <label htmlFor="rp-password">Password</label>
             <div className="auth-page-pw-wrapper">
               <input
@@ -124,7 +151,7 @@ export default function Register() {
                 placeholder="At least 6 characters"
                 value={form.password}
                 onChange={handleChange}
-                required
+                onBlur={handleBlur}
                 autoComplete="off"
               />
               <button
@@ -137,6 +164,9 @@ export default function Register() {
                 <i className={`fa-solid ${showPw ? "fa-eye-slash" : "fa-eye"}`} />
               </button>
             </div>
+            {fieldErrors.password && (
+              <span className="auth-field-error">{fieldErrors.password}</span>
+            )}
           </div>
 
           <button className="auth-page-btn" type="submit" disabled={loading}>
