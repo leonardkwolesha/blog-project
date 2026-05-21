@@ -85,7 +85,7 @@ export default function Register() {
           </div>
         ) : null}
 
-        <form className="auth-page-form" onSubmit={handleSubmit} noValidate>
+        <form className="auth-page-form" onSubmit={handleSubmit} noValidate autoComplete="off">
           <div className="auth-page-field">
             <label htmlFor="rp-username">Username</label>
             <input
@@ -96,7 +96,7 @@ export default function Register() {
               value={form.username}
               onChange={handleChange}
               autoFocus
-              autoComplete="username"
+              autoComplete="off"
             />
           </div>
 
@@ -110,7 +110,7 @@ export default function Register() {
               value={form.email}
               onChange={handleChange}
               required
-              autoComplete="email"
+              autoComplete="off"
             />
           </div>
 
@@ -125,7 +125,7 @@ export default function Register() {
                 value={form.password}
                 onChange={handleChange}
                 required
-                autoComplete="new-password"
+                autoComplete="off"
               />
               <button
                 type="button"

@@ -10,9 +10,9 @@ export default function Login() {
   const { login, isLoaded, isSignedIn } = useAuth();
   const navigate                    = useNavigate();
 
-  const [form, setForm]       = useState({ email: location.state?.email || "", password: "" });
+  const [form, setForm]       = useState({ email: "", password: "" });
   const [showPw, setShowPw]   = useState(false);
-  const [info, setInfo]       = useState(location.state?.message || "");
+  const [info, setInfo]       = useState("");
   const [error, setError]     = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -68,7 +68,7 @@ export default function Login() {
           </div>
         )}
 
-        <form className="auth-page-form" onSubmit={handleSubmit} noValidate>
+        <form className="auth-page-form" onSubmit={handleSubmit} noValidate autoComplete="off">
           <div className="auth-page-field">
             <label htmlFor="lp-email">Email</label>
             <input
@@ -80,7 +80,7 @@ export default function Login() {
               onChange={handleChange}
               required
               autoFocus
-              autoComplete="email"
+              autoComplete="off"
             />
           </div>
 
@@ -98,7 +98,7 @@ export default function Login() {
                 value={form.password}
                 onChange={handleChange}
                 required
-                autoComplete="current-password"
+                autoComplete="off"
               />
               <button
                 type="button"

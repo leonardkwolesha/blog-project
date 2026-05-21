@@ -124,7 +124,7 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
                 <i className="fa-solid fa-circle-check" /> {info}
               </div>
             ) : (
-              <form onSubmit={handleForgot}>
+              <form onSubmit={handleForgot} autoComplete="off">
                 <div className="auth-field">
                   <label htmlFor="am-forgot-email">Email</label>
                   <input
@@ -222,7 +222,7 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
             </div>
           ) : null}
 
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} autoComplete="off">
             {tab === "register" && (
               <div className="auth-field">
                 <label htmlFor="am-username">Username</label>
@@ -233,7 +233,7 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
                   placeholder="Your name or handle"
                   value={form.username}
                   onChange={handleChange}
-                  autoComplete="username"
+                  autoComplete="off"
                 />
               </div>
             )}
@@ -248,7 +248,7 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
                 value={form.email}
                 onChange={handleChange}
                 required
-                autoComplete="email"
+                autoComplete="off"
                 autoFocus
               />
             </div>
@@ -275,7 +275,7 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
                   value={form.password}
                   onChange={handleChange}
                   required
-                  autoComplete={tab === "login" ? "current-password" : "new-password"}
+                  autoComplete="off"
                 />
                 <button
                   type="button"
