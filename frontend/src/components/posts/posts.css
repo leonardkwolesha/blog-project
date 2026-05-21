@@ -1,18 +1,17 @@
-.posts-wrapper {
-  width: 100%;
-}
+.posts-wrapper { width: 100%; }
 
+/* min(280px, 100%) prevents overflow on screens narrower than 280px */
 .posts-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
   gap: 24px;
-  padding: 0;
 }
 
+/* ── Skeleton shimmer ── */
 .post-skeleton {
   height: 320px;
-  border-radius: 14px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  border-radius: 18px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite;
 }
@@ -22,52 +21,57 @@
   100% { background-position: -200% 0; }
 }
 
+/* ── Empty state ── */
 .posts-empty {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 60px 20px;
-  color: #999;
+  padding: 64px 20px;
+  color: #aaa;
   font-size: 16px;
   text-align: center;
+  gap: 8px;
 }
 
 .posts-empty-icon {
-  font-size: 36px;
+  font-size: 40px;
   color: #ddd;
-  margin-bottom: 12px;
   display: block;
 }
 
+/* ── Pagination ── */
 .posts-pagination {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
-  margin-top: 36px;
+  margin-top: 40px;
   flex-wrap: wrap;
 }
 
 .page-btn {
   padding: 9px 22px;
   border: 2px solid #e0e0e0;
-  border-radius: 8px;
+  border-radius: 10px;
   background: #fff;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   color: #333;
   cursor: pointer;
-  transition: all 0.2s ease;
+  font-family: inherit;
+  transition: border-color 0.2s, color 0.2s, background 0.2s, transform 0.15s;
   min-height: 44px;
 }
 
 .page-btn:hover:not(:disabled) {
   border-color: #ff6b00;
   color: #ff6b00;
+  background: #fff8f3;
+  transform: translateY(-1px);
 }
 
 .page-btn:disabled {
-  opacity: 0.4;
+  opacity: 0.35;
   cursor: not-allowed;
 }
 
@@ -75,19 +79,26 @@
   font-size: 14px;
   font-weight: 600;
   color: #555;
-  min-width: 70px;
+  min-width: 60px;
   text-align: center;
+  background: #f8f8f8;
+  border-radius: 8px;
+  padding: 8px 12px;
 }
 
+/* ── Responsive ── */
 @media (max-width: 900px) {
-  .posts-grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+  .posts-grid { gap: 20px; }
 }
 
 @media (max-width: 600px) {
-  .posts-grid { grid-template-columns: 1fr; gap: 18px; }
+  .posts-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
   .page-btn { padding: 9px 16px; font-size: 13px; }
 }
 
-@media (max-width: 400px) {
+@media (max-width: 420px) {
   .posts-grid { gap: 14px; }
 }

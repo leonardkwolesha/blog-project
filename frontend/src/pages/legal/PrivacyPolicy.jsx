@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import "./legal.css";
 
@@ -95,11 +95,84 @@ const SECTIONS = [
   },
 ];
 
+const HERO_STATS = [
+  { icon: "fa-solid fa-database",    label: "Minimal data only"  },
+  { icon: "fa-solid fa-ban",         label: "Zero data sold"     },
+  { icon: "fa-solid fa-lock",        label: "HTTPS encrypted"    },
+  { icon: "fa-solid fa-cookie-bite", label: "No ad trackers"     },
+];
+
 export default function PrivacyPolicy() {
-  const [active, setActive] = useState(null);
+  const [openIds, setOpenIds]     = useState(() => new Set(["overview", "data-collected"]));
+  const [activeId, setActiveId]   = useState("overview");
+  const [progress, setProgress]   = useState(0);
+  const [copied, setCopied]       = useState(false);
+  const sectionRefs               = useRef({});
+
+  const allOpen = openIds.size === SECTIONS.length;
+
+  /* ── Reading progress ── */
+  useEffect(() => {
+    const onScroll = () => {
+      const el  = document.documentElement;
+      const max = el.scrollHeight - el.clientHeight;
+      setProgress(max > 0 ? Math.round((el.scrollTop / max) * 100) : 0);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  /* ── Intersection observer — auto-highlight active TOC item ── */
+  useEffect(() => {
+    const observers = [];
+    SECTIONS.forEach(({ id }) => {
+      const el = sectionRefs.current[id];
+      if (!el) return;
+      const obs = new IntersectionObserver(
+        ([entry]) => { if (entry.isIntersecting) setActiveId(id); },
+        { rootMargin: "-25% 0px -65% 0px" }
+      );
+      obs.observe(el);
+      observers.push(obs);
+    });
+    return () => observers.forEach((o) => o.disconnect());
+  }, []);
+
+  const toggleSection = (id) => {
+    setOpenIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAll = () => {
+    setOpenIds(allOpen ? new Set() : new Set(SECTIONS.map((s) => s.id)));
+  };
+
+  const scrollToSection = (id) => {
+    // Ensure section is open before scrolling
+    setOpenIds((prev) => { const n = new Set(prev); n.add(id); return n; });
+    setActiveId(id);
+    setTimeout(() => {
+      sectionRefs.current[id]?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 60);
+  };
+
+  const copyEmail = () => {
+    navigator.clipboard?.writeText("leonardsengoma07@gmail.com").then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
 
   return (
     <div className="legal-page">
+
+      {/* Reading progress bar */}
+      <div className="pp-progress-bar" role="progressbar" aria-valuenow={progress} aria-valuemax={100}>
+        <div className="pp-progress-fill" style={{ width: `${progress}%` }} />
+      </div>
 
       {/* Hero */}
       <section className="legal-hero">
@@ -115,32 +188,48 @@ export default function PrivacyPolicy() {
           <p className="legal-updated">
             <i className="fa-regular fa-calendar" /> Last updated: May 2025
           </p>
+
+          {/* Quick-trust stats */}
+          <div className="pp-hero-stats">
+            {HERO_STATS.map(({ icon, label }, i) => (
+              <div key={label} className="pp-hero-stat-group">
+                {i > 0 && <span className="pp-stat-divider" />}
+                <div className="pp-stat">
+                  <i className={icon} />
+                  <span>{label}</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* Body */}
       <div className="legal-body">
 
-        {/* Sidebar TOC */}
+        {/* Sticky TOC */}
         <aside className="legal-toc">
           <p className="legal-toc-title">On this page</p>
           <ul>
-            {SECTIONS.map(({ id, title }) => (
+            {SECTIONS.map(({ id, icon, title }) => (
               <li key={id}>
-                <a
-                  href={`#${id}`}
-                  className={`legal-toc-link ${active === id ? "active" : ""}`}
-                  onClick={() => setActive(id)}
+                <button
+                  className={`legal-toc-link ${activeId === id ? "active" : ""}`}
+                  onClick={() => scrollToSection(id)}
                 >
-                  {title}
-                </a>
+                  <i className={icon} />
+                  <span>{title}</span>
+                  {openIds.has(id) && <i className="fa-solid fa-circle pp-toc-dot" />}
+                </button>
               </li>
             ))}
           </ul>
         </aside>
 
-        {/* Sections */}
+        {/* Content */}
         <article className="legal-content">
+
+          {/* Info banner */}
           <div className="legal-intro-box">
             <i className="fa-solid fa-circle-info" />
             <p>
@@ -149,27 +238,92 @@ export default function PrivacyPolicy() {
             </p>
           </div>
 
-          {SECTIONS.map(({ id, icon, title, content, bullets }) => (
-            <section key={id} id={id} className="legal-section">
-              <div className="legal-section-header">
-                <div className="legal-section-icon">
-                  <i className={icon} />
+          {/* Controls row */}
+          <div className="pp-controls">
+            <span className="pp-controls-label">
+              <i className="fa-solid fa-list-ul" /> {SECTIONS.length} sections
+            </span>
+            <div className="pp-controls-right">
+              <span className="pp-open-count">
+                {openIds.size} open
+              </span>
+              <button className="pp-toggle-all" onClick={toggleAll}>
+                <i className={`fa-solid ${allOpen ? "fa-compress" : "fa-expand"}`} />
+                {allOpen ? "Collapse all" : "Expand all"}
+              </button>
+            </div>
+          </div>
+
+          {/* Accordion sections */}
+          {SECTIONS.map(({ id, icon, title, content, bullets }) => {
+            const isOpen = openIds.has(id);
+            return (
+              <section
+                key={id}
+                id={id}
+                ref={(el) => { sectionRefs.current[id] = el; }}
+                className={`pp-accordion ${isOpen ? "open" : ""}`}
+              >
+                <button
+                  className="pp-accordion-header"
+                  onClick={() => toggleSection(id)}
+                  aria-expanded={isOpen}
+                >
+                  <div className="pp-accordion-header-left">
+                    <div className="legal-section-icon">
+                      <i className={icon} />
+                    </div>
+                    <h2 className="legal-section-title">{title}</h2>
+                  </div>
+                  <i className={`fa-solid fa-chevron-down pp-chevron ${isOpen ? "open" : ""}`} />
+                </button>
+
+                {/* CSS grid trick for smooth height animation */}
+                <div className="pp-accordion-body">
+                  <div className="pp-accordion-inner">
+                    <div className="pp-accordion-content">
+                      {content && (
+                        <p className="legal-section-text">
+                          {id === "contact" || id === "rights"
+                            ? content.split("leonardsengoma07@gmail.com").map((part, i, arr) =>
+                                i < arr.length - 1
+                                  ? [
+                                      part,
+                                      <span key={i} className="pp-email-wrap">
+                                        <a href="mailto:leonardsengoma07@gmail.com" className="pp-email-link">
+                                          leonardsengoma07@gmail.com
+                                        </a>
+                                        <button
+                                          className={`pp-copy-btn ${copied ? "copied" : ""}`}
+                                          onClick={copyEmail}
+                                          title="Copy email"
+                                          type="button"
+                                        >
+                                          <i className={`fa-solid ${copied ? "fa-check" : "fa-copy"}`} />
+                                        </button>
+                                      </span>,
+                                    ]
+                                  : part
+                              )
+                            : content}
+                        </p>
+                      )}
+                      {bullets && (
+                        <ul className="legal-bullets">
+                          {bullets.map((b) => (
+                            <li key={b}>
+                              <i className="fa-solid fa-circle-dot" />
+                              <span>{b}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <h2 className="legal-section-title">{title}</h2>
-              </div>
-              {content && <p className="legal-section-text">{content}</p>}
-              {bullets && (
-                <ul className="legal-bullets">
-                  {bullets.map((b) => (
-                    <li key={b}>
-                      <i className="fa-solid fa-circle-dot" />
-                      <span>{b}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
-          ))}
+              </section>
+            );
+          })}
 
           {/* Bottom nav */}
           <div className="legal-bottom-nav">
