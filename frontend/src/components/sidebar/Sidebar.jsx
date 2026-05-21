@@ -1,8 +1,15 @@
 import "./sidebar.css";
 
-const CATEGORIES = ["Technology", "Science", "Life", "Career", "Design", "Other"];
+const CATEGORIES = [
+  { name: "Technology", icon: "fa-solid fa-microchip" },
+  { name: "Science",    icon: "fa-solid fa-flask"     },
+  { name: "Life",       icon: "fa-solid fa-heart"     },
+  { name: "Career",     icon: "fa-solid fa-briefcase" },
+  { name: "Design",     icon: "fa-solid fa-palette"   },
+  { name: "Other",      icon: "fa-solid fa-ellipsis"  },
+];
 
-export default function Sidebar({ onCategoryClick }) {
+export default function Sidebar({ onCategoryClick, activeCategory }) {
   return (
     <div className="sidebar">
       <div className="sidebar-card">
@@ -16,17 +23,24 @@ export default function Sidebar({ onCategoryClick }) {
       <div className="sidebar-card">
         <h3 className="sidebar-heading">Browse by Category</h3>
         <ul className="sidebar-cats">
-          {CATEGORIES.map((cat) => (
-            <li key={cat}>
-              <button
-                className="sidebar-cat-btn"
-                onClick={() => onCategoryClick && onCategoryClick(cat)}
-              >
-                {cat}
-                <span className="sidebar-arrow">→</span>
-              </button>
-            </li>
-          ))}
+          {CATEGORIES.map(({ name, icon }) => {
+            const isActive = activeCategory === name;
+            return (
+              <li key={name}>
+                <button
+                  className={`sidebar-cat-btn${isActive ? " active" : ""}`}
+                  onClick={() => onCategoryClick && onCategoryClick(isActive ? "" : name)}
+                  aria-pressed={isActive}
+                >
+                  <span className="sidebar-cat-inner">
+                    <i className={icon} />
+                    {name}
+                  </span>
+                  <i className={`fa-solid ${isActive ? "fa-circle-xmark" : "fa-chevron-right"} sidebar-cat-arrow`} />
+                </button>
+              </li>
+            );
+          })}
         </ul>
       </div>
 

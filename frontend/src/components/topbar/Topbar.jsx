@@ -47,11 +47,27 @@ export default function Topbar() {
     if (showSearch) inputRef.current?.focus();
   }, [showSearch]);
 
+  /* Close menu on route change */
   useEffect(() => {
     setMenuOpen(false);
     setShowSearch(false);
     setQuery("");
   }, [location.pathname]);
+
+  /* Close menu when viewport grows past the mobile breakpoint (resize bug fix) */
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 768) setMenuOpen(false);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  /* Lock body scroll while mobile menu is open */
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [menuOpen]);
 
   useEffect(() => {
     const handler = (e) => {
@@ -199,6 +215,7 @@ export default function Topbar() {
               key={label}
               to={to}
               className={`nav-mobile-link ${isActive(to) ? "active" : ""}`}
+              onClick={() => setMenuOpen(false)}
             >
               {label}
             </Link>
@@ -207,6 +224,7 @@ export default function Topbar() {
             <Link
               to="/dashboard"
               className={`nav-mobile-link ${isActive("/dashboard") ? "active" : ""}`}
+              onClick={() => setMenuOpen(false)}
             >
               Dashboard
             </Link>

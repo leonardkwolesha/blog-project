@@ -1,13 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
+import { API_BASE } from "../../config/api";
 import "./About.css";
-
-const STATS = [
-  { icon: "fa-solid fa-pen-nib",     label: "Articles Published", value: 120  },
-  { icon: "fa-solid fa-users",        label: "Active Readers",     value: 4800 },
-  { icon: "fa-solid fa-tags",         label: "Categories",         value: 6    },
-  { icon: "fa-solid fa-earth-africa", label: "Countries Reached",  value: 34   },
-];
 
 const STACK = [
   { icon: "fa-brands fa-react",    name: "React 19",      color: "#61dafb", desc: "Frontend UI"          },
@@ -37,36 +32,72 @@ const VALUES = [
   },
 ];
 
+/* ── Counter — uses rAF easing so even small targets (6, 34) animate visibly ── */
 function Counter({ target, duration = 1800 }) {
   const [count, setCount] = useState(0);
-  const ref = useRef(null);
-  const started = useRef(false);
+  const ref      = useRef(null);
+  const started  = useRef(false);
+  const rafId    = useRef(null);
 
   useEffect(() => {
+    // Reset when target changes (live data arrives after static fallback)
+    started.current = false;
+    setCount(0);
+    if (rafId.current) cancelAnimationFrame(rafId.current);
+
+    if (!ref.current) return;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !started.current) {
-          started.current = true;
-          const step = Math.ceil(target / (duration / 16));
-          let current = 0;
-          const timer = setInterval(() => {
-            current = Math.min(current + step, target);
-            setCount(current);
-            if (current >= target) clearInterval(timer);
-          }, 16);
-        }
+        if (!entry.isIntersecting || started.current) return;
+        started.current = true;
+        const startTime = performance.now();
+
+        const tick = (now) => {
+          const elapsed  = now - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          // ease-out cubic — makes the tail slow down so small numbers feel weighty
+          const eased = 1 - Math.pow(1 - progress, 3);
+          setCount(Math.round(eased * target));
+          if (progress < 1) {
+            rafId.current = requestAnimationFrame(tick);
+          } else {
+            setCount(target);
+          }
+        };
+        rafId.current = requestAnimationFrame(tick);
       },
-      { threshold: 0.5 }
+      { threshold: 0.2, rootMargin: "0px 0px -40px 0px" }
     );
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
+
+    observer.observe(ref.current);
+    return () => {
+      observer.disconnect();
+      if (rafId.current) cancelAnimationFrame(rafId.current);
+    };
   }, [target, duration]);
 
-  return <span ref={ref}>{count.toLocaleString()}</span>;
+  // inline-block gives the span a proper bounding-box for IntersectionObserver
+  return <span ref={ref} style={{ display: "inline-block" }}>{count.toLocaleString()}</span>;
 }
 
 export default function About() {
   const [activeStack, setActiveStack] = useState(null);
+  const [liveStats, setLiveStats]     = useState({ totalPosts: null, categoryCount: null });
+
+  /* Fetch real post / category counts */
+  useEffect(() => {
+    axios.get(`${API_BASE}/api/posts/stats`)
+      .then((r) => setLiveStats({ totalPosts: r.data.totalPosts, categoryCount: r.data.categoryCount }))
+      .catch(() => {}); // silently fall back to static values below
+  }, []);
+
+  const STATS = [
+    { icon: "fa-solid fa-pen-nib",      label: "Articles Published", value: liveStats.totalPosts   ?? 120  },
+    { icon: "fa-solid fa-users",         label: "Active Readers",     value: 4800                          },
+    { icon: "fa-solid fa-tags",          label: "Categories",         value: liveStats.categoryCount ?? 6  },
+    { icon: "fa-solid fa-earth-africa",  label: "Countries Reached",  value: 34                            },
+  ];
 
   return (
     <div className="ab-page">
@@ -102,7 +133,7 @@ export default function About() {
             </div>
             <div className="ab-stat-num">
               <Counter target={value} />
-              {value >= 1000 ? "+" : "+"}
+              +
             </div>
             <div className="ab-stat-label">{label}</div>
           </div>

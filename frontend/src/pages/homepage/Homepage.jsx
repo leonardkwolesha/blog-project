@@ -4,16 +4,20 @@ import Sidebar from "../../components/sidebar/Sidebar";
 import Posts from "../../components/posts/Posts";
 import "./homepage.css";
 
+const NAV_HEIGHT = 70; // 58px sticky nav + 12px breathing room
+
 export default function Homepage() {
   const [activeCategory, setActiveCategory] = useState("");
   const postsRef = useRef(null);
 
   const handleCategoryChange = (cat) => {
     setActiveCategory(cat);
-    // scroll to posts section when a category filter is applied
     if (cat) {
       setTimeout(() => {
-        postsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        if (!postsRef.current) return;
+        // Offset by the sticky topbar height so the filter bar isn't hidden underneath it
+        const top = postsRef.current.getBoundingClientRect().top + window.scrollY - NAV_HEIGHT;
+        window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
       }, 80);
     }
   };
@@ -35,7 +39,7 @@ export default function Homepage() {
           <Posts category={activeCategory} />
         </main>
         <aside className="home-sidebar">
-          <Sidebar onCategoryClick={handleCategoryChange} />
+          <Sidebar onCategoryClick={handleCategoryChange} activeCategory={activeCategory} />
         </aside>
       </div>
     </>

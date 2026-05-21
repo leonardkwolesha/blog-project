@@ -284,3 +284,19 @@ export const searchBlogs = async (req, res) => {
     });
   }
 };
+
+// ==============================
+// GET PUBLIC STATS
+// ==============================
+export const getStats = async (req, res) => {
+  try {
+    const baseQuery = { isDeleted: false, published: true };
+    const [totalPosts, categories] = await Promise.all([
+      BlogPost.countDocuments(baseQuery),
+      BlogPost.distinct("category", baseQuery),
+    ]);
+    return res.json({ success: true, totalPosts, categoryCount: categories.length });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Failed to fetch stats" });
+  }
+};

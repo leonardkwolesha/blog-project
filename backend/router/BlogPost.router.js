@@ -8,6 +8,7 @@ import {
   updateBlogPost,
   deleteBlogPost,
   searchBlogs,
+  getStats,
 } from "../controller/BlogPost.controller.js";
 
 const router = express.Router();
@@ -44,6 +45,7 @@ const ensureUserExists = async (req, res, next) => {
 // ── Routes ──────────────────────────────────────────────
 router.post(  "/create",  verifyToken, ensureUserExists, upload.single("image"), createBlogPost);
 router.get(   "/search",  searchBlogs);
+router.get(   "/stats",   getStats);       // must be before /:id
 router.get(   "/",        getAllBlogPosts);
 router.get(   "/:id",     getBlogPostById);
 router.put(   "/:id",     verifyToken, ensureUserExists, upload.single("image"), updateBlogPost);

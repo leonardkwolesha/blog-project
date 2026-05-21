@@ -50,6 +50,7 @@
   width: 100%;
   padding: 10px 12px;
   border: none;
+  border-left: 3px solid transparent;
   border-radius: 8px;
   background: #f8f8f8;
   font-size: 14px;
@@ -58,27 +59,54 @@
   cursor: pointer;
   text-align: left;
   font-family: "Segoe UI", system-ui, sans-serif;
-  transition: background 0.2s, color 0.2s, transform 0.18s;
+  transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.18s;
   min-height: 44px;
   -webkit-tap-highlight-color: transparent;
+}
+
+.sidebar-cat-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sidebar-cat-inner i {
+  font-size: 13px;
+  width: 16px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.sidebar-cat-arrow {
+  font-size: 11px;
+  opacity: 0.35;
+  transition: opacity 0.18s, transform 0.18s, color 0.18s;
+  flex-shrink: 0;
 }
 
 .sidebar-cat-btn:hover {
   background: #fff4ec;
   color: #ff6b00;
-  transform: translateX(3px);
+  border-left-color: #ffcca6;
+  transform: translateX(2px);
 }
 
-.sidebar-arrow {
-  font-size: 13px;
-  opacity: 0;
-  transition: opacity 0.18s, transform 0.18s;
-  flex-shrink: 0;
-}
-
-.sidebar-cat-btn:hover .sidebar-arrow {
+.sidebar-cat-btn:hover .sidebar-cat-arrow {
   opacity: 1;
   transform: translateX(2px);
+}
+
+/* Active state — selected category */
+.sidebar-cat-btn.active {
+  background: #fff4ec;
+  color: #ff6b00;
+  border-left-color: #ff6b00;
+  font-weight: 700;
+}
+
+.sidebar-cat-btn.active .sidebar-cat-arrow {
+  opacity: 1;
+  color: #ff6b00;
 }
 
 /* ── Social links ── */
@@ -114,7 +142,7 @@
 ═══════════════════════════════════ */
 @media (max-width: 900px) {
   .sidebar {
-    position: static; /* no sticky on mobile */
+    position: static;
     gap: 0;
   }
 
@@ -153,6 +181,7 @@
     border-radius: 50px;
     background: #f5f5f5;
     border: 1.5px solid #e8e8e8;
+    border-left: 1.5px solid #e8e8e8; /* override desktop left-border */
     transform: none;
   }
 
@@ -160,7 +189,19 @@
     transform: none;
     background: #fff4ec;
     border-color: #ffcca6;
+    border-left-color: #ffcca6;
   }
 
-  .sidebar-arrow { display: none; }
+  .sidebar-cat-btn.active {
+    background: #fff4ec;
+    border-color: #ff6b00;
+    border-left-color: #ff6b00;
+    color: #ff6b00;
+    font-weight: 700;
+  }
+
+  .sidebar-cat-arrow { display: none; }
+
+  .sidebar-cat-inner { gap: 6px; }
+  .sidebar-cat-inner i { width: auto; }
 }
