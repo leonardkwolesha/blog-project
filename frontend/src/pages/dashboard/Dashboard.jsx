@@ -33,7 +33,7 @@ export default function Dashboard() {
       </div>
 
       <div className="db-content">
-        {activeTab === "posts" && <ViewBlogs />}
+        {activeTab === "posts" && <ViewBlogs onWriteNew={() => setActiveTab("write")} />}
         {activeTab === "write" && <CreateBlog />}
       </div>
     </div>

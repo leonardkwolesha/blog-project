@@ -63,7 +63,7 @@ function BlogCard({ blog, onDelete }) {
   );
 }
 
-export default function ViewBlogs() {
+export default function ViewBlogs({ onWriteNew }) {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
@@ -140,7 +140,11 @@ export default function ViewBlogs() {
       {blogs.length === 0 ? (
         <div className="vb-empty">
           <i className="fa-solid fa-pen-to-square vb-empty-icon" />
-          <p>No posts yet. <Link to="/create-blog">Write your first post →</Link></p>
+          {onWriteNew ? (
+            <p>No posts yet. <button className="vb-empty-link" onClick={onWriteNew}>Write your first post →</button></p>
+          ) : (
+            <p>No posts yet. <Link to="/create-blog">Write your first post →</Link></p>
+          )}
         </div>
       ) : (
         <div className="vb-list">

@@ -126,6 +126,7 @@
 
 .vb-empty-icon { font-size: 36px; color: #ddd; display: block; margin-bottom: 12px; }
 .vb-empty a { color: #ff6b00; font-weight: 600; text-decoration: none; }
+.vb-empty-link { all: unset; color: #ff6b00; font-weight: 600; cursor: pointer; }
 
 /* Cards */
 .vb-list {

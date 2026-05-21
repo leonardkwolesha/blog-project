@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Header from "../../components/header/Header";
 import Sidebar from "../../components/sidebar/Sidebar";
 import Posts from "../../components/posts/Posts";
@@ -12,15 +12,22 @@ export default function Homepage() {
 
   const handleCategoryChange = (cat) => {
     setActiveCategory(cat);
-    if (cat) {
-      setTimeout(() => {
-        if (!postsRef.current) return;
-        // Offset by the sticky topbar height so the filter bar isn't hidden underneath it
-        const top = postsRef.current.getBoundingClientRect().top + window.scrollY - NAV_HEIGHT;
-        window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
-      }, 80);
-    }
   };
+
+  // Scroll to the posts section after a category filter is applied.
+  // useEffect runs after React commits the DOM (ref position is stable by then);
+  // rAF defers until the browser finishes its layout pass so getBoundingClientRect
+  // returns the correct value — avoids the stale-position bug of a raw setTimeout.
+  useEffect(() => {
+    if (!activeCategory || !postsRef.current) return;
+    const raf = requestAnimationFrame(() => {
+      if (!postsRef.current) return;
+      const top =
+        postsRef.current.getBoundingClientRect().top + window.scrollY - NAV_HEIGHT;
+      window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [activeCategory]);
 
   return (
     <>
