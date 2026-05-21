@@ -12,6 +12,14 @@
 .home-main    { grid-area: main;    min-width: 0; align-self: start; }
 .home-sidebar { grid-area: sidebar; min-width: 0; }
 
+/* Zero-height scroll anchor placed just above the cards grid */
+.posts-cards-anchor {
+  display: block;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
 /* ── Category filter bar ── */
 .home-filter-bar {
   display: flex;

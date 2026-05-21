@@ -158,7 +158,7 @@
   /* Hide "About" and "Follow" cards on mobile to save space */
   .sidebar-card:not(:nth-child(2)) { display: none; }
 
-  /* Category card becomes a slim strip */
+  /* Category card becomes a slim horizontal strip */
   .sidebar-card:nth-child(2) {
     padding: 14px 16px;
     border-radius: 12px;
@@ -171,14 +171,30 @@
     flex-wrap: nowrap;
     overflow-x: auto;
     gap: 8px;
-    padding-bottom: 4px;
+    padding-bottom: 6px;
     scroll-snap-type: x mandatory;
+    scroll-padding-left: 4px;
     -webkit-overflow-scrolling: touch;
-    -webkit-mask-image: linear-gradient(to right, black 80%, transparent 100%);
-    mask-image: linear-gradient(to right, black 80%, transparent 100%);
+    /* fade both edges — subtle left fade hints at scrollable content in both
+       directions without needing JS; right fade draws the eye to scroll right */
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      #000 14px,
+      #000 calc(100% - 14px),
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      #000 14px,
+      #000 calc(100% - 14px),
+      transparent 100%
+    );
   }
 
   .sidebar-cats::-webkit-scrollbar { display: none; }
+  .sidebar-cats { scrollbar-width: none; }
 
   .sidebar-cats li { flex-shrink: 0; scroll-snap-align: start; }
 
@@ -190,7 +206,7 @@
     border-radius: 50px;
     background: #f5f5f5;
     border: 1.5px solid #e8e8e8;
-    border-left: 1.5px solid #e8e8e8; /* override desktop left-border */
+    border-left: 1.5px solid #e8e8e8; /* override desktop left-border accent */
     transform: none;
   }
 
@@ -213,4 +229,57 @@
 
   .sidebar-cat-inner { gap: 6px; }
   .sidebar-cat-inner i { width: auto; }
+}
+
+/* ── Large phone: tighten chip strip ── */
+@media (max-width: 600px) {
+  .sidebar-card:nth-child(2) {
+    padding: 12px 14px;
+    border-radius: 10px;
+  }
+
+  .sidebar-heading {
+    font-size: 10px;
+    letter-spacing: 1.2px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+  }
+
+  .sidebar-cats { gap: 6px; }
+
+  .sidebar-cat-btn {
+    padding: 7px 14px;
+    min-height: 36px;
+    font-size: 12.5px;
+  }
+
+  .sidebar-cat-inner { gap: 5px; }
+  .sidebar-cat-inner i { font-size: 12px; }
+}
+
+/* ── Small phone: compact chip strip ── */
+@media (max-width: 420px) {
+  .sidebar-card:nth-child(2) {
+    padding: 10px 12px;
+    border-radius: 10px;
+  }
+
+  .sidebar-heading {
+    font-size: 9.5px;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+  }
+
+  .sidebar-cats { gap: 5px; }
+
+  .sidebar-cat-btn {
+    padding: 6px 12px;
+    min-height: 34px;
+    font-size: 12px;
+    gap: 5px;
+  }
+
+  .sidebar-cat-inner { gap: 4px; }
+  .sidebar-cat-inner i { font-size: 11px; }
 }
