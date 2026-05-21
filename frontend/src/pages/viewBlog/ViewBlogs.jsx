@@ -68,7 +68,7 @@ export default function ViewBlogs() {
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
   const [confirmId, setConfirmId] = useState(null);
-  const { isLoaded, isSignedIn, token } = useAuth();
+  const { isLoaded, isSignedIn, token, user } = useAuth();
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
@@ -82,7 +82,7 @@ export default function ViewBlogs() {
       try {
         const res = await axios.get(`${API_BASE}/api/blogs`, {
           headers: { Authorization: `Bearer ${token}` },
-          params: { limit: 50 },
+          params: { authorId: user?._id, limit: 50 },
         });
         const data = Array.isArray(res.data.blogs) ? res.data.blogs : [];
         setBlogs(data);

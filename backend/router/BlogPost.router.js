@@ -1,6 +1,6 @@
 import express from "express";
 import multer from "multer";
-import { verifyClerkToken } from "../middleware/clerkAuth.middleware.js";
+import { verifyToken } from "../middleware/auth.middleware.js";
 import {
   createBlogPost,
   getAllBlogPosts,
@@ -22,7 +22,7 @@ const upload = multer({
   },
 });
 
-// Middleware: ensure the Clerk user is synced to MongoDB
+// Middleware: verify the authenticated user exists in the database
 const ensureUserExists = async (req, res, next) => {
   try {
     if (!req.userId)
@@ -42,11 +42,11 @@ const ensureUserExists = async (req, res, next) => {
 };
 
 // ── Routes ──────────────────────────────────────────────
-router.post(  "/create",  verifyClerkToken, ensureUserExists, upload.single("image"), createBlogPost);
+router.post(  "/create",  verifyToken, ensureUserExists, upload.single("image"), createBlogPost);
 router.get(   "/search",  searchBlogs);
 router.get(   "/",        getAllBlogPosts);
 router.get(   "/:id",     getBlogPostById);
-router.put(   "/:id",     verifyClerkToken, ensureUserExists, upload.single("image"), updateBlogPost);
-router.delete("/:id",     verifyClerkToken, ensureUserExists, deleteBlogPost);
+router.put(   "/:id",     verifyToken, ensureUserExists, upload.single("image"), updateBlogPost);
+router.delete("/:id",     verifyToken, ensureUserExists, deleteBlogPost);
 
 export default router;

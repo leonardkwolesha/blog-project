@@ -14,7 +14,7 @@ const SECTIONS = [
     icon: "fa-solid fa-database",
     title: "Data We Collect",
     bullets: [
-      "Account data — email address, username, and profile image provided at sign-up via Clerk.",
+      "Account data — email address, username, and profile image provided at sign-up.",
       "Content data — blog posts, titles, descriptions, categories, tags, and images you upload.",
       "Usage data — pages visited, search queries entered, and interaction timestamps (stored in server logs).",
       "Device data — browser type, operating system, and IP address collected automatically.",
@@ -40,7 +40,6 @@ const SECTIONS = [
     title: "Third-Party Services",
     content: `We use a small number of trusted third-party services to operate the Platform. Each processes data under their own privacy policies:`,
     bullets: [
-      "Clerk (clerk.com) — handles authentication, session tokens, and identity management.",
       "Cloudinary (cloudinary.com) — stores and delivers images you upload.",
       "MongoDB Atlas (mongodb.com) — stores your account and content data in a secure cloud database.",
     ],
@@ -49,7 +48,7 @@ const SECTIONS = [
     id: "cookies",
     icon: "fa-solid fa-cookie-bite",
     title: "Cookies & Local Storage",
-    content: `bloggerLK uses minimal browser storage. Clerk sets a session cookie to keep you signed in. We do not use advertising cookies, tracking pixels, or third-party analytics trackers. You may disable cookies in your browser settings, though this will prevent you from staying signed in.`,
+    content: `bloggerLK uses minimal browser storage. A JWT token is stored in localStorage to keep you signed in — it expires automatically after 7 days. We do not use advertising cookies, tracking pixels, or third-party analytics trackers.`,
   },
   {
     id: "retention",

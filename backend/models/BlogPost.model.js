@@ -36,10 +36,6 @@ const blogPostSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    authorClerkId: {
-      type: String,
-      default: "",
-    },
     views: {
       type: Number,
       default: 0,
@@ -99,9 +95,10 @@ blogPostSchema.pre("save", async function () {
       this.title
         .toLowerCase()
         .replace(/\s+/g, "-")
-        .replace(/[^\w-]+/g, "") + // remove any non-word characters
+        .replace(/[^\w-]+/g, "") +
       "-" +
-      Date.now();
+      Date.now() +
+      Math.random().toString(36).slice(2, 6);
   }
 });
 

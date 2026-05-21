@@ -4,13 +4,17 @@ import { useAuth } from "../../context/AuthContext";
 import { API_BASE } from "../../config/api";
 import "./AuthModal.css";
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function AuthModal({ onClose, defaultTab = "login" }) {
   const [tab, setTab]       = useState(defaultTab);
   const [form, setForm]     = useState({ email: "", password: "", username: "" });
+  const [touched, setTouched] = useState({ email: false, password: false, username: false });
   const [showPw, setShowPw] = useState(false);
-  const [error, setError]   = useState("");
-  const [info, setInfo]     = useState("");   // non-blocking hint message
+  const [serverError, setServerError] = useState("");
+  const [info, setInfo]     = useState("");
   const [loading, setLoading] = useState(false);
+  const [emailTaken, setEmailTaken] = useState(false);
   const { login } = useAuth();
   const overlayRef = useRef(null);
 
@@ -20,14 +24,42 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const handleChange = (e) =>
-    setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
+  // Inline field errors — only shown for touched fields
+  const fieldErrors = {};
+  if (tab === "register" && touched.username && !form.username.trim()) {
+    fieldErrors.username = "Username is required.";
+  }
+  if (touched.email) {
+    if (!form.email.trim())                      fieldErrors.email = "Email is required.";
+    else if (!EMAIL_RE.test(form.email.trim()))  fieldErrors.email = "Enter a valid email address.";
+    else if (emailTaken)                         fieldErrors.email = "taken";
+  }
+  if (touched.password) {
+    if (!form.password) {
+      fieldErrors.password = "Password is required.";
+    } else if (tab === "register" && form.password.length < 6) {
+      fieldErrors.password = "Password must be at least 6 characters.";
+    }
+  }
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setServerError("");
+    if (name === "email") setEmailTaken(false);
+    setForm((p) => ({ ...p, [name]: value }));
+  };
+
+  const handleBlur = (e) => {
+    setTouched((p) => ({ ...p, [e.target.name]: true }));
+  };
 
   const switchTab = (t, keepEmail = false) => {
     setTab(t);
-    setError("");
+    setServerError("");
     setInfo("");
     setShowPw(false);
+    setEmailTaken(false);
+    setTouched({ email: false, password: false, username: false });
     setForm((p) => ({
       email: keepEmail ? p.email : "",
       password: "",
@@ -38,13 +70,23 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
   /* ── Login / Register submit ── */
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setInfo("");
+
+    // Touch all fields to reveal any hidden errors
+    setTouched({ email: true, password: true, username: true });
+
+    const email      = form.email.trim();
+    const isRegister = tab === "register";
+
+    // Client-side gate — don't hit the server if the form is invalid
+    if (!email || !EMAIL_RE.test(email)) return;
+    if (!form.password) return;
+    if (isRegister && form.password.length < 6) return;
+    if (isRegister && !form.username.trim()) return;
+
+    setServerError("");
     setLoading(true);
 
-    // Capture tab value now — don't read it inside the async catch (stale closure risk)
-    const isRegister       = tab === "register";
-    const normalizedEmail  = form.email.trim().toLowerCase();
+    const normalizedEmail = email.toLowerCase();
 
     try {
       const url     = isRegister ? `${API_BASE}/api/auth/register` : `${API_BASE}/api/auth/login`;
@@ -60,13 +102,14 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
       const msg    = err.response?.data?.message || "Something went wrong. Try again.";
 
       if (isRegister && status === 409) {
-        // Stay on register — clear password so user can try a different email or fix theirs
+        // Show email-taken error inline under the email field
+        setEmailTaken(true);
+        setTouched((p) => ({ ...p, email: true }));
         setForm((p) => ({ ...p, password: "" }));
-        setError("duplicate-email");   // sentinel — rendered as a rich block below
         return;
       }
 
-      setError(msg);
+      setServerError(msg);
     } finally {
       setLoading(false);
     }
@@ -75,14 +118,16 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
   /* ── Forgot password submit ── */
   const handleForgot = async (e) => {
     e.preventDefault();
-    setError("");
+    setServerError("");
     setInfo("");
     setLoading(true);
     try {
-      await axios.post(`${API_BASE}/api/auth/forgot-password`, { email: form.email.trim().toLowerCase() });
+      await axios.post(`${API_BASE}/api/auth/forgot-password`, {
+        email: form.email.trim().toLowerCase(),
+      });
       setInfo("Check your inbox — we sent a reset link if that email is registered.");
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to send reset email. Try again.");
+      setServerError(err.response?.data?.message || "Failed to send reset email. Try again.");
     } finally {
       setLoading(false);
     }
@@ -113,9 +158,9 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
             <h2 className="auth-title" style={{ marginTop: "14px" }}>Forgot password?</h2>
             <p className="auth-subtitle">Enter your email and we'll send you a reset link.</p>
 
-            {error && (
+            {serverError && (
               <div className="auth-error">
-                <i className="fa-solid fa-circle-exclamation" /> {error}
+                <i className="fa-solid fa-circle-exclamation" /> {serverError}
               </div>
             )}
 
@@ -124,7 +169,7 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
                 <i className="fa-solid fa-circle-check" /> {info}
               </div>
             ) : (
-              <form onSubmit={handleForgot} autoComplete="off">
+              <form onSubmit={handleForgot} autoComplete="off" noValidate>
                 <div className="auth-field">
                   <label htmlFor="am-forgot-email">Email</label>
                   <input
@@ -134,11 +179,15 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
                     placeholder="you@example.com"
                     value={form.email}
                     onChange={handleChange}
-                    required
                     autoFocus
                   />
                 </div>
-                <button className="auth-submit-btn" type="submit" disabled={loading} style={{ marginTop: "8px" }}>
+                <button
+                  className="auth-submit-btn"
+                  type="submit"
+                  disabled={loading}
+                  style={{ marginTop: "8px" }}
+                >
                   {loading && <span className="auth-spinner" />}
                   {loading ? "Sending…" : "Send reset link"}
                 </button>
@@ -167,10 +216,16 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
         </div>
 
         <div className="auth-tabs">
-          <button className={`auth-tab ${tab === "login" ? "active" : ""}`} onClick={() => switchTab("login")}>
+          <button
+            className={`auth-tab ${tab === "login" ? "active" : ""}`}
+            onClick={() => switchTab("login")}
+          >
             Login
           </button>
-          <button className={`auth-tab ${tab === "register" ? "active" : ""}`} onClick={() => switchTab("register")}>
+          <button
+            className={`auth-tab ${tab === "register" ? "active" : ""}`}
+            onClick={() => switchTab("register")}
+          >
             Register
           </button>
         </div>
@@ -185,46 +240,30 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
               : "Join bloggerLK and start writing today."}
           </p>
 
-          {/* Info banner (non-blocking, e.g. "already registered, log in") */}
-          {info && (
-            <div className="auth-info">
-              <i className="fa-solid fa-circle-info" /> {info}
+          {/* Server-level error banner (not field-specific) */}
+          {serverError && (
+            <div className="auth-error">
+              <i className="fa-solid fa-circle-exclamation" />
+              <span>
+                {serverError}
+                {tab === "login" && (
+                  <button
+                    type="button"
+                    className="auth-forgot-inline"
+                    onClick={() => switchTab("forgot", true)}
+                  >
+                    Forgot password?
+                  </button>
+                )}
+              </span>
             </div>
           )}
 
-          {error === "duplicate-email" ? (
-            <div className="auth-error auth-error-dup">
-              <i className="fa-solid fa-circle-exclamation" />
-              <span>
-                That email is already registered.{" "}
-                <button type="button" className="auth-err-link" onClick={() => switchTab("login", true)}>
-                  Log in
-                </button>
-                {" "}or{" "}
-                <button type="button" className="auth-err-link" onClick={() => switchTab("forgot", true)}>
-                  reset your password
-                </button>
-                , or use a different email.
-              </span>
-            </div>
-          ) : error ? (
-            <div className="auth-error">
-              <i className="fa-solid fa-circle-exclamation" /> {error}
-              {tab === "login" && (
-                <button
-                  type="button"
-                  className="auth-forgot-inline"
-                  onClick={() => switchTab("forgot", true)}
-                >
-                  Forgot password?
-                </button>
-              )}
-            </div>
-          ) : null}
+          <form onSubmit={handleSubmit} autoComplete="off" noValidate>
 
-          <form onSubmit={handleSubmit} autoComplete="off">
+            {/* Username (register only) */}
             {tab === "register" && (
-              <div className="auth-field">
+              <div className={`auth-field${fieldErrors.username ? " has-error" : ""}`}>
                 <label htmlFor="am-username">Username</label>
                 <input
                   id="am-username"
@@ -233,12 +272,17 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
                   placeholder="Your name or handle"
                   value={form.username}
                   onChange={handleChange}
+                  onBlur={handleBlur}
                   autoComplete="off"
                 />
+                {fieldErrors.username && (
+                  <span className="auth-field-error">{fieldErrors.username}</span>
+                )}
               </div>
             )}
 
-            <div className="auth-field">
+            {/* Email */}
+            <div className={`auth-field${fieldErrors.email ? " has-error" : ""}`}>
               <label htmlFor="am-email">Email</label>
               <input
                 id="am-email"
@@ -247,13 +291,36 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
                 placeholder="you@example.com"
                 value={form.email}
                 onChange={handleChange}
-                required
+                onBlur={handleBlur}
                 autoComplete="off"
                 autoFocus
               />
+              {fieldErrors.email === "taken" ? (
+                <span className="auth-field-error">
+                  Email already registered.{" "}
+                  <button
+                    type="button"
+                    className="auth-field-err-link"
+                    onClick={() => switchTab("login", true)}
+                  >
+                    Log in
+                  </button>
+                  {" "}or{" "}
+                  <button
+                    type="button"
+                    className="auth-field-err-link"
+                    onClick={() => switchTab("forgot", true)}
+                  >
+                    reset password
+                  </button>.
+                </span>
+              ) : fieldErrors.email ? (
+                <span className="auth-field-error">{fieldErrors.email}</span>
+              ) : null}
             </div>
 
-            <div className="auth-field">
+            {/* Password */}
+            <div className={`auth-field${fieldErrors.password ? " has-error" : ""}`}>
               <div className="auth-pw-label-row">
                 <label htmlFor="am-password">Password</label>
                 {tab === "login" && (
@@ -274,7 +341,7 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
                   placeholder={tab === "register" ? "At least 6 characters" : "Your password"}
                   value={form.password}
                   onChange={handleChange}
-                  required
+                  onBlur={handleBlur}
                   autoComplete="off"
                 />
                 <button
@@ -287,6 +354,9 @@ export default function AuthModal({ onClose, defaultTab = "login" }) {
                   <i className={`fa-solid ${showPw ? "fa-eye-slash" : "fa-eye"}`} />
                 </button>
               </div>
+              {fieldErrors.password && (
+                <span className="auth-field-error">{fieldErrors.password}</span>
+              )}
             </div>
 
             <button className="auth-submit-btn" type="submit" disabled={loading}>

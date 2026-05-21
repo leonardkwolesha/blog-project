@@ -2,11 +2,6 @@ import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
-    clerkId: {
-      type: String,
-      default: null,
-      sparse: true,
-    },
     username: {
       type: String,
       default: "",
@@ -21,7 +16,7 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      default: "",
+      default: null,
     },
     imageUrl: {
       type: String,
@@ -30,6 +25,7 @@ const userSchema = new mongoose.Schema(
     resetToken: {
       type: String,
       default: null,
+      index: true,
     },
     resetTokenExpiry: {
       type: Date,

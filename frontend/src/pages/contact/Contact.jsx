@@ -35,7 +35,7 @@ const CONTACT_INFO = [
 const FAQS = [
   {
     q: "Can I publish articles without signing up?",
-    a: "Reading is open to everyone. To create, edit, or delete posts you need a free account — sign in with Google or email via Clerk.",
+    a: "Reading is open to everyone. To create, edit, or delete posts you need a free account — register with your email and password.",
   },
   {
     q: "Is my content stored safely?",

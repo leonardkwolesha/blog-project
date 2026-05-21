@@ -5,7 +5,7 @@ import User from "../models/user.model.js";
 import { sendResetEmail, canSendEmail } from "../config/email.js";
 
 const sign = (userId) =>
-  jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "7d" });
+  jwt.sign({ userId }, process.env.JWT_SECRET, { algorithm: "HS256", expiresIn: "7d" });
 
 const safeUser = (u) => ({
   _id: u._id,
@@ -14,20 +14,24 @@ const safeUser = (u) => ({
   imageUrl: u.imageUrl,
 });
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export const register = async (req, res) => {
   try {
     const { email, password, username } = req.body;
 
     if (!email || !password)
       return res.status(400).json({ success: false, message: "Email and password are required" });
+    if (!EMAIL_RE.test(email.trim()))
+      return res.status(400).json({ success: false, message: "Enter a valid email address" });
     if (password.length < 6)
       return res.status(400).json({ success: false, message: "Password must be at least 6 characters" });
 
     const normalEmail = email.toLowerCase().trim();
     const existing = await User.findOne({ email: normalEmail });
 
-    // Already registered with a password — reject
-    if (existing && existing.password) {
+    // Already registered with a real password — reject
+    if (existing?.password?.length > 0) {
       return res.status(409).json({ success: false, message: "An account with this email already exists. Please log in." });
     }
 
@@ -35,7 +39,7 @@ export const register = async (req, res) => {
 
     let user;
     if (existing) {
-      // Old Clerk account — claim it by setting a password
+      // Email exists but never had a password set — complete the account
       existing.password = hashed;
       if (username?.trim()) existing.username = username.trim();
       await existing.save();
@@ -55,10 +59,12 @@ export const register = async (req, res) => {
     });
   } catch (err) {
     console.error("Register error:", err.message);
-    // Duplicate key — race condition where two requests created the same email
-    if (err.code === 11000)
-      return res.status(409).json({ success: false, message: "An account with this email already exists." });
-    // DB unreachable
+    if (err.code === 11000) {
+      const field = Object.keys(err.keyPattern || {})[0];
+      if (field === "email")
+        return res.status(409).json({ success: false, message: "An account with this email already exists. Please log in." });
+      return res.status(500).json({ success: false, message: "Registration failed. Please try again." });
+    }
     if (err.name === "MongooseError" || err.name === "MongoNetworkError" || err.message?.includes("connect"))
       return res.status(503).json({ success: false, message: "Service temporarily unavailable. Please try again shortly." });
     return res.status(500).json({ success: false, message: "Registration failed. Please try again." });
@@ -103,9 +109,12 @@ export const forgotPassword = async (req, res) => {
     return res.status(200).json({ success: true, message: "If that email exists, a reset link has been sent." });
   } catch (err) {
     console.error("Forgot password error:", err.message);
-    // Give a clearer message when the SMTP connection itself fails
-    const isSmtpErr = err.code === "ECONNECTION" || err.code === "ETIMEDOUT" || err.responseCode >= 500;
-    const message   = isSmtpErr
+    const isSmtpErr =
+      err.code === "ECONNECTION" ||
+      err.code === "ETIMEDOUT"   ||
+      err.code === "EAUTH"       ||
+      (typeof err.responseCode === "number" && err.responseCode >= 500);
+    const message = isSmtpErr
       ? "Could not reach the email server. Please try again in a moment."
       : "Failed to send reset email. Try again later.";
     return res.status(500).json({ success: false, message });
@@ -150,7 +159,7 @@ export const login = async (req, res) => {
       return res.status(400).json({ success: false, message: "Email and password are required" });
 
     const user = await User.findOne({ email: email.toLowerCase().trim() });
-    if (!user || !user.password)
+    if (!user || !user.password?.length)
       return res.status(401).json({ success: false, message: "Invalid email or password" });
 
     const match = await bcrypt.compare(password, user.password);

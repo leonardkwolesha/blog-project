@@ -4,19 +4,28 @@ import nodemailer from "nodemailer";
 export const canSendEmail = () =>
   !!(process.env.EMAIL_USER && process.env.EMAIL_PASS);
 
-// Use full SMTP config instead of service:"gmail" so we can set timeouts
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-  connectionTimeout: 10_000,  // fail fast after 10 s
-  greetingTimeout:   10_000,
-  socketTimeout:     15_000,
-});
+// Build the transporter on every call so it reads credentials from process.env
+// at call time — not at import time. ESM hoists all imports before any module
+// body runs, so a module-level transporter would capture undefined credentials
+// even when dotenv.config() is called at the top of index.js.
+const makeTransporter = () =>
+  nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+    tls: {
+      // Required when a local proxy (antivirus / corporate firewall) performs
+      // SSL inspection and re-signs the Gmail cert with its own CA.
+      rejectUnauthorized: false,
+    },
+    connectionTimeout: 10_000,
+    greetingTimeout:   10_000,
+    socketTimeout:     15_000,
+  });
 
 export const sendResetEmail = async (toEmail, resetUrl) => {
   const html = `
@@ -42,12 +51,10 @@ export const sendResetEmail = async (toEmail, resetUrl) => {
     </div>
   `;
 
-  await transporter.sendMail({
+  await makeTransporter().sendMail({
     from: `"bloggerLK" <${process.env.EMAIL_USER}>`,
     to: toEmail,
     subject: "Reset your bloggerLK password",
     html,
   });
 };
-
-export default transporter;

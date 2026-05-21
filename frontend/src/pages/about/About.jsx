@@ -15,8 +15,7 @@ const STACK = [
   { icon: "fa-solid fa-database",  name: "MongoDB",       color: "#47a248", desc: "Database"             },
   { icon: "fa-solid fa-bolt",      name: "Express.js",    color: "#fff",    desc: "REST API"             },
   { icon: "fa-solid fa-cloud",     name: "Cloudinary",    color: "#3448c5", desc: "Image storage"        },
-  { icon: "fa-solid fa-shield",    name: "Clerk Auth",    color: "#6c47ff", desc: "Authentication"       },
-  { icon: "fa-solid fa-lock",      name: "JWT",           color: "#f0b429", desc: "Session tokens"       },
+  { icon: "fa-solid fa-lock",      name: "JWT Auth",      color: "#f0b429", desc: "Authentication"       },
   { icon: "fa-brands fa-github",   name: "GitHub",        color: "#fff",    desc: "Version control"      },
 ];
 
@@ -34,7 +33,7 @@ const VALUES = [
   {
     icon: "fa-solid fa-user-shield",
     title: "Secure by Design",
-    desc: "Clerk handles auth. Tokens are short-lived. Only the author can edit or delete their own posts.",
+    desc: "JWT handles auth. Tokens are signed with HS256 and expire after 7 days. Only the author can edit or delete their own posts.",
   },
 ];
 
@@ -131,7 +130,7 @@ export default function About() {
               "Open to all skill levels — junior to senior",
               "Full CRUD — own your content completely",
               "Image uploads via Cloudinary — no local storage limits",
-              "Clerk authentication — sign in with Google or email",
+              "JWT authentication — sign in with email and password",
             ].map((item) => (
               <li key={item}>
                 <i className="fa-solid fa-circle-check" /> {item}

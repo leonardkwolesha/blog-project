@@ -39,7 +39,6 @@ const uploadImage = (buffer, originalname) => {
 export const createBlogPost = async (req, res) => {
   try {
     const user = req.user;
-    const clerkUserId = req.userId;
     const { title, content, description, category, tags, published, imageUrl } = req.body;
 
     if (!title || !content)
@@ -60,7 +59,6 @@ export const createBlogPost = async (req, res) => {
       tags: tags ? (Array.isArray(tags) ? tags : tags.split(",").map(t => t.trim())) : [],
       image: finalImageUrl,
       author: user._id,
-      authorClerkId: clerkUserId,
       published: published !== undefined ? published : true,
     });
 
@@ -136,9 +134,10 @@ export const updateBlogPost = async (req, res) => {
 // ==============================
 export const getAllBlogPosts = async (req, res) => {
   try {
-    const { page = 1, limit = 10, category, tag, search, sortBy = "createdAt", order = "desc" } = req.query;
+    const { page = 1, limit = 10, category, tag, search, sortBy = "createdAt", order = "desc", authorId } = req.query;
 
-    const query = { isDeleted: false };
+    const query = { isDeleted: false, published: true };
+    if (authorId) query.author = authorId;
     if (category) query.category = category;
     if (tag) query.tags = { $in: [tag] };
     if (search) {
