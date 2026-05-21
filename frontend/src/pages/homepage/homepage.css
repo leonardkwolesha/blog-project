@@ -18,6 +18,7 @@
   height: 0;
   overflow: hidden;
   pointer-events: none;
+  scroll-margin-top: 82px; /* sticky nav (58px) + breathing room */
 }
 
 /* ── Category filter bar ── */

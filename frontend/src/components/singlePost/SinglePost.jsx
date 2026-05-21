@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import axios from "axios";
 import "./singlePost.css";
 import { API_BASE } from "../../config/api";
+import Comments from "../comments/Comments";
 
 const FALLBACK = "https://images.pexels.com/photos/1591056/pexels-photo-1591056.jpeg?auto=compress&cs=tinysrgb&w=1400";
 
@@ -135,6 +136,9 @@ export default function SinglePost() {
           <i className="fa-solid fa-arrow-left" /> Back to all posts
         </Link>
       </div>
+
+      <div className="sp-comments-divider" aria-hidden="true" />
+      <Comments postId={blog._id} />
     </article>
   );
 }

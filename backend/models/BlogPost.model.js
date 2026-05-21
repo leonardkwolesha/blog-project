@@ -57,6 +57,11 @@ const blogPostSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    commentCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
   },
   {
     timestamps: true,

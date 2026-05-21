@@ -87,7 +87,7 @@ export default function About() {
 
   /* Fetch real post / category counts */
   useEffect(() => {
-    axios.get(`${API_BASE}/api/posts/stats`)
+    axios.get(`${API_BASE}/api/blogs/stats`)
       .then((r) => setLiveStats({ totalPosts: r.data.totalPosts, categoryCount: r.data.categoryCount }))
       .catch(() => {}); // silently fall back to static values below
   }, []);

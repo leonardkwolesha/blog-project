@@ -198,6 +198,124 @@
   transform: translateY(-1px);
 }
 
+.ft-sub-feedback {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  border-radius: 8px;
+  padding: 10px 14px;
+  animation: fadeIn 0.3s ease;
+  line-height: 1.45;
+}
+
+.ft-sub-feedback.success {
+  color: #1cb86b;
+  background: rgba(28,184,107,0.10);
+  border: 1px solid rgba(28,184,107,0.25);
+}
+
+.ft-sub-feedback.already {
+  color: #f0b429;
+  background: rgba(240,180,41,0.10);
+  border: 1px solid rgba(240,180,41,0.25);
+}
+
+.ft-sub-feedback.error {
+  color: #e63946;
+  background: rgba(230,57,70,0.10);
+  border: 1px solid rgba(230,57,70,0.25);
+}
+
+.ft-sub-feedback i { margin-top: 1px; flex-shrink: 0; }
+
+.ft-subscribe-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ── Subscribed active card ── */
+.ft-sub-active {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: rgba(28,184,107,0.07);
+  border: 1.5px solid rgba(28,184,107,0.22);
+  border-radius: 10px;
+  padding: 14px 16px;
+  animation: fadeIn 0.35s ease;
+}
+
+.ft-sub-active-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #1cb86b;
+  letter-spacing: 0.2px;
+}
+
+.ft-sub-active-badge i { font-size: 14px; }
+
+.ft-sub-active-email {
+  font-size: 12.5px;
+  color: #aaa;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* ── Unsubscribe button ── */
+.ft-unsub-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: transparent;
+  border: 1.5px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #777;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+  min-height: 36px;
+  align-self: flex-start;
+}
+
+.ft-unsub-btn:hover:not(:disabled) {
+  border-color: rgba(230,57,70,0.45);
+  color: #e63946;
+  background: rgba(230,57,70,0.07);
+}
+
+.ft-unsub-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.ft-sub-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: ft-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes ft-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* keep old class name working if anything references it */
 .ft-subscribed {
   display: flex;
   align-items: center;

@@ -17,6 +17,8 @@ import authRouter from "./router/auth.router.js";
 import userRoutes from "./router/user.router.js";
 import blogRouter from "./router/BlogPost.router.js";
 import contactRouter from "./router/contact.router.js";
+import subscriberRouter from "./router/subscriber.router.js";
+import commentRouter    from "./router/comment.router.js";
 import cloudinary from "./config/cloudinary.js";
 
 const app = express();
@@ -100,6 +102,8 @@ app.use("/api/auth", authRouter);
 app.use("/api/users", userRoutes);
 app.use("/api/blogs", blogRouter);
 app.use("/api/contact", contactRouter);
+app.use("/api/subscribers", subscriberRouter);
+app.use("/api/comments",   commentRouter);
 
 // ── Local uploads fallback ───────────────────────────────────────────────────
 if (!cloudinary?.config()?.cloud_name) {

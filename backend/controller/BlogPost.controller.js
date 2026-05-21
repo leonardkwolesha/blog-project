@@ -3,9 +3,34 @@ import fs from "fs/promises";
 import path from "path";
 import cloudinary from "../config/cloudinary.js";
 import BlogPost from "../models/BlogPost.model.js";
+import Subscriber from "../models/subscriber.model.js";
+import { canSendEmail, sendNewPostEmail } from "../config/email.js";
 
 function escapeRegex(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// Notify all active subscribers about a newly-published post (fire-and-forget)
+async function dispatchNewPostEmails(post) {
+  if (!canSendEmail()) return;
+  try {
+    const subscribers = await Subscriber.find({ active: true }).select("email token").lean();
+    if (!subscribers.length) return;
+    const results = await Promise.allSettled(
+      subscribers.map((sub) =>
+        sendNewPostEmail({ email: sub.email, post, unsubscribeToken: sub.token })
+      )
+    );
+    const sent   = results.filter((r) => r.status === "fulfilled").length;
+    const failed = results.filter((r) => r.status === "rejected").length;
+    console.log(`[newsletter] dispatched for "${post.title}": ${sent} sent, ${failed} failed`);
+    results.forEach((r, i) => {
+      if (r.status === "rejected")
+        console.error(`[newsletter] failed for ${subscribers[i].email}:`, r.reason?.message);
+    });
+  } catch (err) {
+    console.error("[newsletter] dispatch error:", err.message);
+  }
 }
 
 // Detect backend host for local uploads
@@ -68,11 +93,21 @@ export const createBlogPost = async (req, res) => {
     const blogObj = newBlog.toObject();
     blogObj.image = getFullImageUrl(blogObj.image, req);
 
-    return res.status(201).json({
+    res.status(201).json({
       success: true,
       message: "Blog post created successfully",
       blog: blogObj,
     });
+
+    // Notify subscribers — fire-and-forget, never delays the response
+    if (newBlog.published) {
+      dispatchNewPostEmails({
+        id:          newBlog._id,
+        title:       newBlog.title,
+        description: newBlog.description,
+        category:    newBlog.category,
+      });
+    }
   } catch (error) {
     console.error("Create blog error:", error);
     return res.status(500).json({
@@ -96,6 +131,8 @@ export const updateBlogPost = async (req, res) => {
     if (!blog || blog.isDeleted) return res.status(404).json({ success: false, message: "Blog post not found" });
     if (!blog.author?.equals(user._id)) return res.status(403).json({ success: false, message: "Forbidden" });
 
+    const wasPublished = blog.published;
+
     if (title) blog.title = title;
     if (content) blog.content = content;
     if (description) blog.description = description;
@@ -114,11 +151,23 @@ export const updateBlogPost = async (req, res) => {
     const blogObj = blog.toObject();
     blogObj.image = getFullImageUrl(blogObj.image, req);
 
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       message: "Blog post updated successfully",
       blog: blogObj,
     });
+
+    // Notify subscribers when a draft is published for the first time
+    if (!wasPublished && blog.published) {
+      dispatchNewPostEmails({
+        id:          blog._id,
+        title:       blog.title,
+        description: blog.description,
+        category:    blog.category,
+      });
+    }
+
+    return;
   } catch (error) {
     console.error("Update blog error:", error);
     return res.status(500).json({

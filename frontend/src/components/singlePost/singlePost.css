@@ -285,6 +285,17 @@
 
 .sp-error p { font-size: 18px; margin-bottom: 24px; }
 
+/* ── Comments divider ── */
+.sp-comments-divider {
+  max-width: 780px;
+  margin: 0 auto 40px;
+  padding: 0 24px;
+  height: 2px;
+  background: linear-gradient(to right, #ff6b00 0%, #e63946 50%, transparent 100%);
+  opacity: 0.18;
+  border-radius: 2px;
+}
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .sp-hero-content { padding: 0 18px 36px; }

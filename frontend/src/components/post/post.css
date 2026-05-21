@@ -274,6 +274,38 @@
   letter-spacing: 0.2px;
 }
 
+/* ── Comment count meta row ── */
+.post-card-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: -2px;
+}
+
+.post-card-comment-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #aaa;
+  text-decoration: none;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1.5px solid #f0f0f0;
+  background: #fafafa;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+  cursor: pointer;
+}
+
+.post-card-comment-count:hover {
+  color: #ff6b00;
+  border-color: #ffcca6;
+  background: #fff4ec;
+}
+
+.post-card-comment-count i { font-size: 13px; }
+
 /* ── Footer ── */
 .post-card-footer {
   display: flex;

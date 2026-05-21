@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { API_BASE } from "../../config/api";
 import "./Footer.css";
 
 const CATEGORIES = ["Technology", "Science", "Life", "Career", "Design", "Other"];
@@ -11,20 +13,80 @@ const QUICK_LINKS = [
   { label: "Dashboard", to: "/dashboard" },
 ];
 
+const LS_KEY = "bloglk_subscriber";
+
+function readStored() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+function saveStored(data) {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(data)); } catch { /* blocked */ }
+}
+
+function clearStored() {
+  try { localStorage.removeItem(LS_KEY); } catch { /* blocked */ }
+}
+
 export default function Footer() {
-  const [email, setEmail] = useState("");
-  const [subscribed, setSubscribed] = useState(false);
+  const [email, setEmail]           = useState("");
+  const [subStatus, setSubStatus]   = useState("idle"); // idle | loading | error
+  const [subMsg, setSubMsg]         = useState("");
+  const [sub, setSub]               = useState(() => readStored()); // null | { email, token }
+  const [unsubbing, setUnsubbing]   = useState(false);
+  const [unsubError, setUnsubError] = useState("");
   const [catHovered, setCatHovered] = useState(null);
   const navigate = useNavigate();
 
   const year = new Date().getFullYear();
 
-  const handleSubscribe = (e) => {
+  const handleSubscribe = async (e) => {
     e.preventDefault();
-    if (!email.trim() || !email.includes("@")) return;
-    setSubscribed(true);
-    setEmail("");
-    setTimeout(() => setSubscribed(false), 4000);
+    if (subStatus === "loading") return;
+
+    setSubStatus("loading");
+    setSubMsg("");
+    try {
+      const res = await axios.post(`${API_BASE}/api/subscribers`, { email: email.trim() });
+      const stored = { email: res.data.email, token: res.data.token };
+      saveStored(stored);
+      setSub(stored);
+      setEmail("");
+      setSubStatus("idle");
+    } catch (err) {
+      const status = err.response?.status;
+      const data   = err.response?.data;
+      if (status === 409 && data?.token) {
+        // Already subscribed — mark this browser as subscribed too
+        const stored = { email: data.email, token: data.token };
+        saveStored(stored);
+        setSub(stored);
+        setEmail("");
+        setSubStatus("idle");
+      } else {
+        setSubStatus("error");
+        setSubMsg(data?.message || "Subscription failed. Please try again.");
+        setTimeout(() => setSubStatus("idle"), 6000);
+      }
+    }
+  };
+
+  const handleUnsubscribe = async () => {
+    if (unsubbing || !sub?.token) return;
+    setUnsubbing(true);
+    setUnsubError("");
+    try {
+      await axios.delete(`${API_BASE}/api/subscribers`, { data: { token: sub.token } });
+      clearStored();
+      setSub(null);
+    } catch (err) {
+      setUnsubError(err.response?.data?.message || "Failed to unsubscribe. Please try again.");
+      setTimeout(() => setUnsubError(""), 5000);
+    } finally {
+      setUnsubbing(false);
+    }
   };
 
   const handleCategoryClick = (cat) => {
@@ -101,22 +163,60 @@ export default function Footer() {
             <p className="ft-newsletter-desc">
               Get notified when new articles drop.
             </p>
-            {subscribed ? (
-              <div className="ft-subscribed">
-                <span>✓</span> You're in! Thanks for subscribing.
+
+            {sub ? (
+              /* ── Subscribed state ── */
+              <div className="ft-sub-active">
+                <div className="ft-sub-active-badge">
+                  <i className="fa-solid fa-circle-check" />
+                  <span>Subscribed</span>
+                </div>
+                <p className="ft-sub-active-email" title={sub.email}>{sub.email}</p>
+                {unsubError && (
+                  <div className="ft-sub-feedback error" style={{ marginBottom: 8 }}>
+                    <i className="fa-solid fa-triangle-exclamation" /> {unsubError}
+                  </div>
+                )}
+                <button
+                  className="ft-unsub-btn"
+                  onClick={handleUnsubscribe}
+                  disabled={unsubbing}
+                >
+                  {unsubbing
+                    ? <><span className="ft-sub-spinner" /> Removing…</>
+                    : <><i className="fa-solid fa-bell-slash" /> Unsubscribe</>}
+                </button>
               </div>
             ) : (
-              <form className="ft-newsletter" onSubmit={handleSubscribe}>
-                <input
-                  type="email"
-                  className="ft-email-input"
-                  placeholder="your@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-                <button type="submit" className="ft-subscribe-btn">Subscribe</button>
-              </form>
+              /* ── Form state ── */
+              <>
+                {subStatus === "error" && (
+                  <div className="ft-sub-feedback error">
+                    <i className="fa-solid fa-triangle-exclamation" /> {subMsg}
+                  </div>
+                )}
+
+                <form className="ft-newsletter" onSubmit={handleSubscribe}>
+                  <input
+                    type="email"
+                    className="ft-email-input"
+                    placeholder="your@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={subStatus === "loading"}
+                    required
+                  />
+                  <button
+                    type="submit"
+                    className="ft-subscribe-btn"
+                    disabled={subStatus === "loading"}
+                  >
+                    {subStatus === "loading"
+                      ? <><span className="ft-sub-spinner" /> Subscribing…</>
+                      : "Subscribe"}
+                  </button>
+                </form>
+              </>
             )}
           </div>
         </div>

@@ -139,6 +139,18 @@ export default function Post({ blog }) {
           </div>
         )}
 
+        <div className="post-card-meta-row">
+          <Link
+            to={`/post/${_id}#comments`}
+            className="post-card-comment-count"
+            title="View comments"
+            aria-label={`${blog.commentCount || 0} comments`}
+          >
+            <i className="fa-regular fa-comment" />
+            <span>{blog.commentCount || 0}</span>
+          </Link>
+        </div>
+
         <div className="post-card-footer">
           <div className="post-card-author-wrap">
             <div className="post-card-avatar" aria-hidden="true">{initial}</div>
